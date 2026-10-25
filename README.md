@@ -3,7 +3,7 @@
 > **CS3520 Computer Organisation and Architecture — AY 2026/2027**  
 > **National University of Lesotho**  
 > **Architecture:** LIMO (32-bit RV32I-derived load-store processor with Sesotho orthography)  
-> **Live Site (GitHub Pages):** [https://matseliso20.github.io/limo-Visionary-Architects/](https://matseliso20.github.io/limo-Visionary-Architects/)
+> **Live Site (GitHub Pages):** [https://thmn123.github.io/limo-Visionary-Architects/](https://thmn123.github.io/limo-Visionary-Architects/)
 
 ---
 
@@ -25,7 +25,7 @@ This repository contains the complete implementation for **Milestone 2 (M2)**:
 ## 🧪 Running the Unit Tests
 
 ### Option A: Via Browser UI
-1. Open the [Live Web Application](https://matseliso20.github.io/limo-Visionary-Architects/) (or open `index.html` locally).
+1. Open the [Live Web Application](https://thmn123.github.io/limo-Visionary-Architects/) (or open `index.html` locally).
 2. Click **Tests (F8)** in the top header or press <kbd>F8</kbd>.
 3. The interactive runner executes all 29 verification tests in real time, displaying pass/fail badges, hex encodings, category breakdowns, and JSON export.
 
