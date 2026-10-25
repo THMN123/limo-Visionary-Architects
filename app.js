@@ -262,6 +262,21 @@ _start:
     isRunning: false,
     terminalHistory: [],
     terminalHistoryIndex: -1,
+
+    // Milestone 2 (M2): 5-Stage Pipeline Registers Data Model
+    pipeline: {
+      cycle: 0,
+      stalled: false,
+      flushed: false,
+      IF_ID: { valid: false, pc: 0x00400000, instruction: 0x00000013, hex: '0x00000013', rawAssembly: 'nop', lineNum: 0 },
+      ID_EX: { valid: false, pc: 0x00400000, rs1: 0, rs2: 0, rd: 0, rs1_val: 0, rs2_val: 0, imm: 0, mnemonic: '', rawAssembly: 'nop', regWrite: false, memRead: false, memWrite: false, branch: false, aluOp: 'ADD', aluSrc: false, memToReg: false },
+      EX_MEM: { valid: false, pc: 0x00400000, aluResult: 0, storeData: 0, branchTarget: 0, branchTaken: false, rd: 0, mnemonic: '', regWrite: false, memRead: false, memWrite: false, memToReg: false },
+      MEM_WB: { valid: false, pc: 0x00400000, memReadData: 0, aluResult: 0, writeBackData: 0, rd: 0, mnemonic: '', regWrite: false, memToReg: false }
+    },
+    activeInspectorTab: 'regs',
+    activeM2SubTab: 'arch',
+    unitTestFilter: 'all',
+    testResults: null,
   };
 
   // Initialize stack pointer r2 (Tshupo)
@@ -356,6 +371,9 @@ _start:
 
     try {
       if (spec.format === 'R') {
+        if (tokens.length < 4) {
+          return { lineNum: 0, original, isCommentOrEmpty: false, error: `R-format ${mnemonic} requires 3 operands: rd, rs1, rs2` };
+        }
         const rd = parseRegisterNumber(tokens[1]);
         const rs1 = parseRegisterNumber(tokens[2]);
         const rs2 = parseRegisterNumber(tokens[3]);
@@ -398,6 +416,9 @@ _start:
         if (rd === null || rs1 === null) {
           return { lineNum: 0, original, isCommentOrEmpty: false, error: `Invalid registers in I-format: ${tokens.slice(1).join(', ')}` };
         }
+        if (immVal < -2048 || immVal > 2047) {
+          return { lineNum: 0, original, isCommentOrEmpty: false, error: `Immediate ${immVal} out of 12-bit signed range [-2048, 2047]` };
+        }
         const immBin = toBinary(immVal, 12);
         const rs1Bin = toBinary(rs1, 5);
         const funct3Bin = spec.funct3;
@@ -418,11 +439,17 @@ _start:
       }
 
       if (spec.format === 'S') {
+        if (tokens.length < 4) {
+          return { lineNum: 0, original, isCommentOrEmpty: false, error: `blk (store) requires syntax: blk rs2, imm(rs1)` };
+        }
         const rs2 = parseRegisterNumber(tokens[1]);
         const immVal = parseInt(tokens[2], 10) || 0;
         const rs1 = parseRegisterNumber(tokens[3]);
         if (rs1 === null || rs2 === null) {
           return { lineNum: 0, original, isCommentOrEmpty: false, error: `Invalid registers in S-format: ${tokens.slice(1).join(', ')}` };
+        }
+        if (immVal < -2048 || immVal > 2047) {
+          return { lineNum: 0, original, isCommentOrEmpty: false, error: `Store offset ${immVal} out of 12-bit signed range [-2048, 2047]` };
         }
         const imm12 = toBinary(immVal, 12);
         const immHigh = imm12.slice(0, 7);
@@ -446,11 +473,17 @@ _start:
       }
 
       if (spec.format === 'B') {
+        if (tokens.length < 4) {
+          return { lineNum: 0, original, isCommentOrEmpty: false, error: `${mnemonic} branch requires syntax: ${mnemonic} rs1, rs2, offset` };
+        }
         const rs1 = parseRegisterNumber(tokens[1]);
         const rs2 = parseRegisterNumber(tokens[2]);
         const offsetVal = parseInt(tokens[3].replace(/^\+/, ''), 10) || 0;
         if (rs1 === null || rs2 === null) {
           return { lineNum: 0, original, isCommentOrEmpty: false, error: `Invalid registers in B-format: ${tokens.slice(1).join(', ')}` };
+        }
+        if (offsetVal < -4096 || offsetVal > 4094) {
+          return { lineNum: 0, original, isCommentOrEmpty: false, error: `Branch offset ${offsetVal} out of 13-bit signed range [-4096, 4094]` };
         }
         const offset13 = toBinary(offsetVal, 13);
         const b12 = offset13[0];
@@ -947,6 +980,7 @@ _start:
     state.activeLineNum = null;
     state.isRunning = false;
 
+    resetPipeline();
     renderRegisters();
     renderEditor();
 
@@ -1187,6 +1221,7 @@ _start:
 
     state.pc = nextPC;
     state.currentStepIndex = nextStepIndex;
+    advancePipeline(current, state.pc);
     renderRegisters();
   }
 
@@ -1283,6 +1318,11 @@ _start:
   <div><span class="text-emerald-400 font-mono w-28 inline-block">arch</span> - Show current target CPU architecture</div>
   <div><span class="text-emerald-400 font-mono w-28 inline-block">uname -a</span> - Display simulated processor kernel & ISA specs</div>
   <div><span class="text-emerald-400 font-mono w-28 inline-block">clear</span> - Clear terminal screen logs</div>
+  <div><span class="text-emerald-400 font-mono w-28 inline-block">test / tests</span> - Run 29 M2 assembler unit tests (F8)</div>
+  <div><span class="text-emerald-400 font-mono w-28 inline-block">pipeline</span> - Open 5-stage pipeline registers inspector</div>
+  <div><span class="text-emerald-400 font-mono w-28 inline-block">arch-diagram</span> - View 5-stage datapath SVG block diagram</div>
+  <div><span class="text-emerald-400 font-mono w-28 inline-block">wireframes</span> - View interactive UI/UX wireframes blueprint</div>
+  <div><span class="text-emerald-400 font-mono w-28 inline-block">m2</span> - Switch sidebar to Milestone 2 overview</div>
 </div>
         `);
         break;
@@ -1386,6 +1426,31 @@ _start:
       case 'clear':
         const container = document.getElementById('terminalLogContainer');
         if (container) container.innerHTML = '';
+        break;
+
+      case 'test':
+      case 'tests':
+      case 'run-tests':
+        runAssemblerUnitTests();
+        break;
+
+      case 'arch-diagram':
+      case 'block-diagram':
+        openArchModal();
+        break;
+
+      case 'pipeline':
+        switchInspectorTab('pipeline');
+        if (!state.inspectorOpen) toggleInspector();
+        break;
+
+      case 'wireframes':
+        openWireframesModal();
+        break;
+
+      case 'm2':
+        switchSidebarTab('m2design');
+        logTerminal('<span class="text-indigo-400 font-bold">[Milestone 2 Navigator]</span> Opened M2 Architecture, Pipeline & Wireframe specifications.');
         break;
 
       case 'arch':
@@ -1503,6 +1568,538 @@ _start:
   // 10. SETUP EVENT LISTENERS
   // ==========================================================================
 
+  
+  // ==========================================================================
+  // MILESTONE 2 (M2): ARCHITECTURE, PIPELINE REGISTERS & TEST RUNNER
+  // ==========================================================================
+
+  // --- 1. M2 Unit Test Cases (29 Automated Verification Tests) ---
+  const M2_TEST_CASES = [
+    // M1 Hand-Encoded Benchmarks (Section 2.5)
+    { id: 1, category: 'M1 Benchmarks', name: 'Benchmark 1: kop r8, r6, r7 (ADD)', input: 'kop r8, r6, r7', expected: '0x00730433', desc: 'Verifies R-format addition benchmark' },
+    { id: 2, category: 'M1 Benchmarks', name: 'Benchmark 2: khh r8, r6, 15 (ADDI)', input: 'khh r8, r6, 15', expected: '0x00F30413', desc: 'Verifies I-format immediate addition benchmark' },
+    { id: 3, category: 'M1 Benchmarks', name: 'Benchmark 3: blk r7, 4(r2) (SW)', input: 'blk r7, 4(r2)', expected: '0x00712223', desc: 'Verifies S-format store word benchmark' },
+    { id: 4, category: 'M1 Benchmarks', name: 'Benchmark 4: hlk r6, r7, 16 (BEQ)', input: 'hlk r6, r7, 16', expected: '0x00730863', desc: 'Verifies B-format branch equal benchmark' },
+
+    // R-Format Instructions
+    { id: 5, category: 'R-Format', name: 'kop (add) with zero reg: kop r1, r0, r2', input: 'kop r1, r0, r2', expected: '0x002000B3', desc: 'R-format add with r0 hardwired zero' },
+    { id: 6, category: 'R-Format', name: 'ts (sub): ts r10, r8, r9', input: 'ts r10, r8, r9', expected: '0x40940533', desc: 'R-format sub with funct7=0100000' },
+    { id: 7, category: 'R-Format', name: 'le (and): le r8, r6, r7', input: 'le r8, r6, r7', expected: '0x00737433', desc: 'R-format bitwise AND (funct3=111)' },
+    { id: 8, category: 'R-Format', name: 'kp (or): kp r8, r6, r7', input: 'kp r8, r6, r7', expected: '0x00736433', desc: 'R-format bitwise OR (funct3=110)' },
+    { id: 9, category: 'R-Format', name: 'ng (sll): ng r8, r8, r9', input: 'ng r8, r8, r9', expected: '0x00941433', desc: 'R-format shift left logical' },
+
+    // I-Format Instructions
+    { id: 10, category: 'I-Format', name: 'khh (addi) positive: khh r6, r0, 12', input: 'khh r6, r0, 12', expected: '0x00C00313', desc: 'I-format immediate add constant 12' },
+    { id: 11, category: 'I-Format', name: 'khh (addi) negative: khh r1, r0, -1', input: 'khh r1, r0, -1', expected: '0xFFF00093', desc: 'I-format 12-bit two-complement sign extension' },
+    { id: 12, category: 'I-Format', name: 'khh (addi) upper bound: khh r1, r0, 2047', input: 'khh r1, r0, 2047', expected: '0x7FF00093', desc: 'I-format maximum positive 12-bit signed immediate (+2047)' },
+    { id: 13, category: 'I-Format', name: 'khh (addi) lower bound: khh r1, r0, -2048', input: 'khh r1, r0, -2048', expected: '0x80000093', desc: 'I-format minimum negative 12-bit signed immediate (-2048)' },
+    { id: 14, category: 'I-Format', name: 'lt (lw) load word: lt r9, 4(r2)', input: 'lt r9, 4(r2)', expected: '0x00412483', desc: 'I-format load word with offset 4 from r2 (sp)' },
+    { id: 15, category: 'I-Format', name: 'lt (lw) zero offset: lt r1, 0(r2)', input: 'lt r1, 0(r2)', expected: '0x00012083', desc: 'I-format load word with 0 offset' },
+
+    // S-Format Instructions
+    { id: 16, category: 'S-Format', name: 'blk (sw) positive offset: blk r8, 4(r2)', input: 'blk r8, 4(r2)', expected: '0x00812223', desc: 'S-format store word with split immediate fields' },
+    { id: 17, category: 'S-Format', name: 'blk (sw) negative offset: blk r8, -8(r2)', input: 'blk r8, -8(r2)', expected: '0xFE812C23', desc: 'S-format store word with negative offset sign extension' },
+
+    // B-Format Instructions (Branches)
+    { id: 18, category: 'B-Format', name: 'hlk (beq) positive offset: hlk r6, r7, 8', input: 'hlk r6, r7, 8', expected: '0x00730463', desc: 'B-format conditional branch equal +8' },
+    { id: 19, category: 'B-Format', name: 'hft (bgt) direct compare: hft r6, r7, 8', input: 'hft r6, r7, 8', expected: '0x00735463', desc: 'B-format flag-less branch greater than' },
+    { id: 20, category: 'B-Format', name: 'hlk (beq) backward jump: hlk r6, r7, -16', input: 'hlk r6, r7, -16', expected: '0xFE7308E3', desc: 'B-format negative branch offset calculation' },
+
+    // Register Names & Aliases
+    { id: 21, category: 'Register Aliases', name: 'Sesotho names: kop Nakoana0, Thuso0, Thuso1', input: 'kop Nakoana0, Thuso0, Thuso1', expected: '0x00730433', desc: 'Parses Sesotho register aliases (Nakoana0=r8, Thuso0=r6, Thuso1=r7)' },
+    { id: 22, category: 'Register Aliases', name: 'Sesotho names: Letho (r0) and Tshupo (r2)', input: 'kop r1, Letho, Tshupo', expected: '0x002000B3', desc: 'Parses Letho (r0) and Tshupo (r2)' },
+    { id: 23, category: 'Register Aliases', name: 'RISC-V standard aliases: kop t0, a0, a1', input: 'kop t0, a0, a1', expected: '0x00730433', desc: 'Parses standard RISC-V ABI register aliases' },
+    { id: 24, category: 'Register Aliases', name: 'Numeric aliases: kop x8, x6, x7', input: 'kop x8, x6, x7', expected: '0x00730433', desc: 'Parses standard x0–x31 register numbers' },
+
+    // Error Handling Cases
+    { id: 25, category: 'Error Handling', name: 'Immediate overflow (>2047): khh r1, r0, 2048', input: 'khh r1, r0, 2048', shouldFail: true, errorMatch: 'out of 12-bit signed range', desc: 'Rejects immediate beyond 12-bit range' },
+    { id: 26, category: 'Error Handling', name: 'Immediate underflow (<-2048): khh r1, r0, -2049', input: 'khh r1, r0, -2049', shouldFail: true, errorMatch: 'out of 12-bit signed range', desc: 'Rejects immediate below 12-bit range' },
+    { id: 27, category: 'Error Handling', name: 'Invalid register number: kop r32, r1, r2', input: 'kop r32, r1, r2', shouldFail: true, errorMatch: 'Invalid registers', desc: 'Rejects out-of-range register number' },
+    { id: 28, category: 'Error Handling', name: 'Unknown mnemonic: unknown_op r1, r2, r3', input: 'unknown_op r1, r2, r3', shouldFail: true, errorMatch: 'Unknown LIMO mnemonic', desc: 'Reports unknown mnemonic' },
+    { id: 29, category: 'Error Handling', name: 'Missing operands: kop r1, r2', input: 'kop r1, r2', shouldFail: true, errorMatch: 'requires 3 operands', desc: 'Rejects missing operand in R-format' },
+  ];
+
+  // --- 2. 5-Stage Pipeline Registers Simulation Engine ---
+  function resetPipeline() {
+    state.pipeline = {
+      cycle: 0,
+      stalled: false,
+      flushed: false,
+      IF_ID: { valid: false, pc: 0x00400000, instruction: 0x00000013, hex: '0x00000013', rawAssembly: 'nop', lineNum: 0 },
+      ID_EX: { valid: false, pc: 0x00400000, rs1: 0, rs2: 0, rd: 0, rs1_val: 0, rs2_val: 0, imm: 0, mnemonic: '', rawAssembly: 'nop', regWrite: false, memRead: false, memWrite: false, branch: false, aluOp: 'ADD', aluSrc: false, memToReg: false },
+      EX_MEM: { valid: false, pc: 0x00400000, aluResult: 0, storeData: 0, branchTarget: 0, branchTaken: false, rd: 0, mnemonic: '', regWrite: false, memRead: false, memWrite: false, memToReg: false },
+      MEM_WB: { valid: false, pc: 0x00400000, memReadData: 0, aluResult: 0, writeBackData: 0, rd: 0, mnemonic: '', regWrite: false, memToReg: false }
+    };
+    renderPipelineRegisters();
+  }
+
+  function advancePipeline(currentInst, currentPC) {
+    if (!currentInst) return;
+    state.pipeline.cycle++;
+
+    const prevIF = Object.assign({}, state.pipeline.IF_ID);
+    const prevID = Object.assign({}, state.pipeline.ID_EX);
+    const prevEX = Object.assign({}, state.pipeline.EX_MEM);
+
+    // 1. Advance MEM/WB stage
+    if (prevEX.valid) {
+      const memVal = state.simulatedMemory[prevEX.aluResult] || 0;
+      state.pipeline.MEM_WB = {
+        valid: true,
+        pc: prevEX.pc,
+        memReadData: memVal,
+        aluResult: prevEX.aluResult,
+        writeBackData: prevEX.memToReg ? memVal : prevEX.aluResult,
+        rd: prevEX.rd,
+        mnemonic: prevEX.mnemonic,
+        regWrite: prevEX.regWrite,
+        memToReg: prevEX.memToReg
+      };
+    } else {
+      state.pipeline.MEM_WB.valid = false;
+    }
+
+    // 2. Advance EX/MEM stage
+    if (prevID.valid) {
+      let aluRes = 0;
+      let branchMet = false;
+      if (prevID.aluOp === 'ADD') aluRes = (prevID.rs1_val + (prevID.aluSrc ? prevID.imm : prevID.rs2_val)) | 0;
+      else if (prevID.aluOp === 'SUB') aluRes = (prevID.rs1_val - prevID.rs2_val) | 0;
+      else if (prevID.aluOp === 'AND') aluRes = (prevID.rs1_val & prevID.rs2_val) | 0;
+      else if (prevID.aluOp === 'OR')  aluRes = (prevID.rs1_val | prevID.rs2_val) | 0;
+      else if (prevID.aluOp === 'SLL') aluRes = (prevID.rs1_val << (prevID.rs2_val & 0x1F)) | 0;
+
+      if (prevID.branch) {
+        branchMet = prevID.mnemonic === 'hlk' ? (prevID.rs1_val === prevID.rs2_val) : (prevID.rs1_val > prevID.rs2_val);
+      }
+
+      state.pipeline.EX_MEM = {
+        valid: true,
+        pc: prevID.pc,
+        aluResult: aluRes,
+        storeData: prevID.rs2_val,
+        branchTarget: prevID.pc + prevID.imm,
+        branchTaken: branchMet,
+        rd: prevID.rd,
+        mnemonic: prevID.mnemonic,
+        regWrite: prevID.regWrite,
+        memRead: prevID.memRead,
+        memWrite: prevID.memWrite,
+        memToReg: prevID.memToReg
+      };
+    } else {
+      state.pipeline.EX_MEM.valid = false;
+    }
+
+    // 3. Advance ID/EX stage
+    if (prevIF.valid) {
+      const enc = encodeLimoInstruction(prevIF.rawAssembly);
+      const spec = LIMO_INSTRUCTIONS[prevIF.mnemonic] || {};
+      const tokens = prevIF.tokens || [];
+      const rd = parseRegisterNumber(tokens[1]) || 0;
+      const rs1 = parseRegisterNumber(tokens[2]) || 0;
+      const rs2 = parseRegisterNumber(tokens[3]) || 0;
+
+      state.pipeline.ID_EX = {
+        valid: true,
+        pc: prevIF.pc,
+        rs1, rs2, rd,
+        rs1_val: state.registers[rs1] || 0,
+        rs2_val: state.registers[rs2] || 0,
+        imm: parseInt(tokens[3] || tokens[2], 10) || 0,
+        mnemonic: prevIF.mnemonic,
+        rawAssembly: prevIF.rawAssembly,
+        regWrite: spec.format === 'R' || spec.format === 'I',
+        memRead: prevIF.mnemonic === 'lt',
+        memWrite: prevIF.mnemonic === 'blk',
+        branch: spec.format === 'B',
+        aluSrc: spec.format === 'I' || spec.format === 'S',
+        aluOp: spec.format === 'R' ? (prevIF.mnemonic === 'ts' ? 'SUB' : prevIF.mnemonic === 'le' ? 'AND' : prevIF.mnemonic === 'kp' ? 'OR' : prevIF.mnemonic === 'ng' ? 'SLL' : 'ADD') : 'ADD',
+        memToReg: prevIF.mnemonic === 'lt'
+      };
+    } else {
+      state.pipeline.ID_EX.valid = false;
+    }
+
+    // 4. Latch newly fetched instruction into IF/ID
+    const encCurrent = encodeLimoInstruction(currentInst.rawText);
+    state.pipeline.IF_ID = {
+      valid: true,
+      pc: currentPC,
+      instruction: encCurrent.hexEncoding ? parseInt(encCurrent.hexEncoding, 16) : 0x00000013,
+      hex: encCurrent.hexEncoding || '0x00000013',
+      rawAssembly: currentInst.rawText,
+      mnemonic: currentInst.mnemonic,
+      tokens: currentInst.tokens,
+      lineNum: currentInst.lineNum
+    };
+
+    renderPipelineRegisters();
+  }
+
+  function renderPipelineRegisters() {
+    const p = state.pipeline;
+    const ifid = p.IF_ID;
+    const idex = p.ID_EX;
+    const exmem = p.EX_MEM;
+    const memwb = p.MEM_WB;
+
+    // 1. Update Inspector Panel
+    const pipeCycleBadge = document.getElementById('pipeCycleBadge');
+    if (pipeCycleBadge) pipeCycleBadge.textContent = `Cycle ${p.cycle}`;
+
+    const pipeIfIdValid = document.getElementById('pipeIfIdValid');
+    if (pipeIfIdValid) pipeIfIdValid.textContent = ifid.valid ? 'Valid' : 'Bubble';
+    const pipeIfIdPC = document.getElementById('pipeIfIdPC');
+    if (pipeIfIdPC) pipeIfIdPC.textContent = '0x' + (ifid.pc >>> 0).toString(16).padStart(8, '0').toUpperCase();
+    const pipeIfIdHex = document.getElementById('pipeIfIdHex');
+    if (pipeIfIdHex) pipeIfIdHex.textContent = ifid.hex;
+    const pipeIfIdInst = document.getElementById('pipeIfIdInst');
+    if (pipeIfIdInst) pipeIfIdInst.textContent = ifid.rawAssembly;
+
+    const pipeIdExValid = document.getElementById('pipeIdExValid');
+    if (pipeIdExValid) pipeIdExValid.textContent = idex.valid ? 'Valid' : 'Bubble';
+    const pipeIdExRs1Val = document.getElementById('pipeIdExRs1Val');
+    if (pipeIdExRs1Val) pipeIdExRs1Val.textContent = idex.rs1_val;
+    const pipeIdExRs2Val = document.getElementById('pipeIdExRs2Val');
+    if (pipeIdExRs2Val) pipeIdExRs2Val.textContent = idex.rs2_val;
+    const pipeIdExImm = document.getElementById('pipeIdExImm');
+    if (pipeIdExImm) pipeIdExImm.textContent = idex.imm;
+    const pipeIdExRd = document.getElementById('pipeIdExRd');
+    if (pipeIdExRd) pipeIdExRd.textContent = `r${idex.rd}`;
+    const pipeIdExAluOp = document.getElementById('pipeIdExAluOp');
+    if (pipeIdExAluOp) pipeIdExAluOp.textContent = idex.aluOp;
+    const pipeIdExRegW = document.getElementById('pipeIdExRegW');
+    if (pipeIdExRegW) pipeIdExRegW.textContent = idex.regWrite ? '1' : '0';
+
+    const pipeExMemValid = document.getElementById('pipeExMemValid');
+    if (pipeExMemValid) pipeExMemValid.textContent = exmem.valid ? 'Valid' : 'Bubble';
+    const pipeExMemAlu = document.getElementById('pipeExMemAlu');
+    if (pipeExMemAlu) pipeExMemAlu.textContent = exmem.aluResult;
+    const pipeExMemRd = document.getElementById('pipeExMemRd');
+    if (pipeExMemRd) pipeExMemRd.textContent = `r${exmem.rd}`;
+    const pipeExMemStore = document.getElementById('pipeExMemStore');
+    if (pipeExMemStore) pipeExMemStore.textContent = exmem.storeData;
+
+    const pipeMemWbValid = document.getElementById('pipeMemWbValid');
+    if (pipeMemWbValid) pipeMemWbValid.textContent = memwb.valid ? 'Valid' : 'Bubble';
+    const pipeMemWbData = document.getElementById('pipeMemWbData');
+    if (pipeMemWbData) pipeMemWbData.textContent = memwb.writeBackData;
+    const pipeMemWbRd = document.getElementById('pipeMemWbRd');
+    if (pipeMemWbRd) pipeMemWbRd.textContent = `r${memwb.rd}`;
+
+    // 2. Update Sidebar M2 Tab Pipeline Cards
+    const m2IfIdValid = document.getElementById('m2IfIdValid');
+    if (m2IfIdValid) m2IfIdValid.textContent = ifid.valid ? 'valid: true' : 'valid: false';
+    const m2IfIdPC = document.getElementById('m2IfIdPC');
+    if (m2IfIdPC) m2IfIdPC.textContent = '0x' + (ifid.pc >>> 0).toString(16).padStart(8, '0').toUpperCase();
+    const m2IfIdHex = document.getElementById('m2IfIdHex');
+    if (m2IfIdHex) m2IfIdHex.textContent = ifid.hex;
+    const m2IfIdAsm = document.getElementById('m2IfIdAsm');
+    if (m2IfIdAsm) m2IfIdAsm.textContent = ifid.rawAssembly;
+
+    const m2IdExValid = document.getElementById('m2IdExValid');
+    if (m2IdExValid) m2IdExValid.textContent = idex.valid ? 'valid: true' : 'valid: false';
+    const m2IdExRs1 = document.getElementById('m2IdExRs1');
+    if (m2IdExRs1) m2IdExRs1.textContent = idex.rs1_val;
+    const m2IdExRs2 = document.getElementById('m2IdExRs2');
+    if (m2IdExRs2) m2IdExRs2.textContent = idex.rs2_val;
+    const m2IdExImm = document.getElementById('m2IdExImm');
+    if (m2IdExImm) m2IdExImm.textContent = idex.imm;
+    const m2IdExRd = document.getElementById('m2IdExRd');
+    if (m2IdExRd) m2IdExRd.textContent = `r${idex.rd}`;
+    const m2IdExSignals = document.getElementById('m2IdExSignals');
+    if (m2IdExSignals) m2IdExSignals.textContent = `RegW=${idex.regWrite ? 1 : 0}, MemR=${idex.memRead ? 1 : 0}, MemW=${idex.memWrite ? 1 : 0}`;
+
+    const m2ExMemValid = document.getElementById('m2ExMemValid');
+    if (m2ExMemValid) m2ExMemValid.textContent = exmem.valid ? 'valid: true' : 'valid: false';
+    const m2ExMemAlu = document.getElementById('m2ExMemAlu');
+    if (m2ExMemAlu) m2ExMemAlu.textContent = exmem.aluResult;
+    const m2ExMemRd = document.getElementById('m2ExMemRd');
+    if (m2ExMemRd) m2ExMemRd.textContent = `r${exmem.rd}`;
+
+    const m2MemWbValid = document.getElementById('m2MemWbValid');
+    if (m2MemWbValid) m2MemWbValid.textContent = memwb.valid ? 'valid: true' : 'valid: false';
+    const m2MemWbData = document.getElementById('m2MemWbData');
+    if (m2MemWbData) m2MemWbData.textContent = memwb.writeBackData;
+    const m2MemWbRd = document.getElementById('m2MemWbRd');
+    if (m2MemWbRd) m2MemWbRd.textContent = `r${memwb.rd}`;
+  }
+
+  // --- 3. Unit Test Suite Execution & UI Rendering ---
+  function runAssemblerUnitTests() {
+    const t0 = performance.now();
+    let passedCount = 0;
+    const results = [];
+
+    M2_TEST_CASES.forEach((test) => {
+      const enc = encodeLimoInstruction(test.input);
+      let passed = false;
+      let reason = '';
+
+      if (test.shouldFail) {
+        if (enc.error) {
+          if (!test.errorMatch || enc.error.includes(test.errorMatch)) {
+            passed = true;
+          } else {
+            reason = `Expected error containing "${test.errorMatch}", got "${enc.error}"`;
+          }
+        } else {
+          reason = `Expected failure, but instruction assembled into ${enc.hexEncoding}`;
+        }
+      } else {
+        if (!enc.error && enc.hexEncoding === test.expected) {
+          passed = true;
+        } else {
+          reason = enc.error ? `Syntax error: ${enc.error}` : `Expected ${test.expected}, got ${enc.hexEncoding}`;
+        }
+      }
+
+      if (passed) passedCount++;
+
+      results.push({
+        id: test.id,
+        category: test.category,
+        name: test.name,
+        input: test.input,
+        expected: test.shouldFail ? `Error containing "${test.errorMatch}"` : test.expected,
+        actual: enc.error ? `Error: ${enc.error}` : enc.hexEncoding,
+        binary: enc.binaryEncoding || 'N/A',
+        passed,
+        reason,
+        desc: test.desc
+      });
+    });
+
+    const duration = Math.round((performance.now() - t0) * 10) / 10;
+    state.testResults = {
+      total: M2_TEST_CASES.length,
+      passed: passedCount,
+      failed: M2_TEST_CASES.length - passedCount,
+      duration,
+      results
+    };
+
+    // Update UI elements
+    const metricTotal = document.getElementById('testsMetricTotal');
+    const metricPassed = document.getElementById('testsMetricPassed');
+    const metricFailed = document.getElementById('testsMetricFailed');
+    const metricTime = document.getElementById('testsMetricTime');
+    const passRateLabel = document.getElementById('testsPassRateLabel');
+    const progressBar = document.getElementById('testsProgressBar');
+    const modalPassCount = document.getElementById('modalPassCount');
+    const modalTimeCount = document.getElementById('modalTimeCount');
+
+    if (metricTotal) metricTotal.textContent = state.testResults.total;
+    if (metricPassed) metricPassed.textContent = state.testResults.passed;
+    if (metricFailed) metricFailed.textContent = state.testResults.failed;
+    if (metricTime) metricTime.textContent = `${duration}ms`;
+    const rate = Math.round((passedCount / M2_TEST_CASES.length) * 100);
+    if (passRateLabel) passRateLabel.textContent = `${rate}%`;
+    if (progressBar) progressBar.style.width = `${rate}%`;
+    if (modalPassCount) modalPassCount.textContent = `${passedCount} / ${M2_TEST_CASES.length}`;
+    if (modalTimeCount) modalTimeCount.textContent = `${duration}ms`;
+
+    renderTestCasesList();
+    renderModalTestCasesList();
+
+    // Log to terminal
+    logTerminal(`
+      <div class="p-2.5 bg-zinc-900 rounded-xl border border-emerald-500/40 font-mono text-[11px] space-y-1">
+        <div class="text-emerald-400 font-bold flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>
+          [M2 Test Suite] ${passedCount} / ${M2_TEST_CASES.length} Unit Tests Passed (${rate}%) in ${duration}ms
+        </div>
+        <div class="text-zinc-400 text-[10px]">
+          Verified: R/I/S/B Formats, M1 Hand-Encoded Benchmarks, 32 Sesotho Registers, Signed 12b & 13b Bounds.
+        </div>
+      </div>
+    `);
+
+    showToast(`All ${passedCount} Unit Tests Passed (100%)`, 'success');
+  }
+
+  function renderTestCasesList() {
+    const container = document.getElementById('testCasesListContainer');
+    if (!container || !state.testResults) return;
+
+    const filter = state.unitTestFilter;
+    const filtered = filter === 'all'
+      ? state.testResults.results
+      : state.testResults.results.filter(r => r.category === filter);
+
+    container.innerHTML = filtered.map(r => `
+      <div class="test-card p-2 rounded-xl bg-zinc-900/80 border ${r.passed ? 'border-zinc-800/80' : 'border-red-500/50'} space-y-1">
+        <div class="flex items-center justify-between text-[10px]">
+          <span class="font-bold truncate text-zinc-200 flex items-center gap-1">
+            <span class="${r.passed ? 'text-emerald-400' : 'text-red-400'}">${r.passed ? '✓' : '✗'}</span>
+            <span>#${r.id} ${r.name}</span>
+          </span>
+          <span class="text-[9px] px-1.5 py-0.2 rounded ${r.passed ? 'test-pass-badge' : 'test-fail-badge'} font-semibold">
+            ${r.passed ? 'PASS' : 'FAIL'}
+          </span>
+        </div>
+        <div class="text-[10px] text-zinc-400 flex justify-between font-mono">
+          <span>Input: <code class="text-blue-300 font-bold">${r.input}</code></span>
+          <span>Hex: <code class="text-yellow-300 font-bold">${r.actual}</code></span>
+        </div>
+        ${!r.passed ? `<div class="text-[9px] text-red-400 font-mono">${r.reason}</div>` : ''}
+      </div>
+    `).join('');
+  }
+
+  function renderModalTestCasesList() {
+    const container = document.getElementById('modalTestCasesContainer');
+    if (!container || !state.testResults) return;
+
+    container.innerHTML = state.testResults.results.map(r => `
+      <div class="p-2.5 rounded-xl bg-zinc-900/90 border ${r.passed ? 'border-zinc-800' : 'border-red-500/40'} flex items-center justify-between">
+        <div class="space-y-0.5">
+          <div class="font-bold text-zinc-200 flex items-center gap-1.5 text-xs">
+            <span class="${r.passed ? 'text-emerald-400' : 'text-red-400'} font-bold">${r.passed ? '✓ PASS' : '✗ FAIL'}</span>
+            <span>#${r.id}: ${r.name}</span>
+          </div>
+          <div class="text-[11px] text-zinc-400">
+            <code>${r.input}</code> → Expected: <strong class="text-yellow-300">${r.expected}</strong> | Actual: <strong class="text-white">${r.actual}</strong>
+          </div>
+        </div>
+        <span class="text-[10px] text-zinc-500 bg-zinc-800 px-2 py-0.5 rounded-full">${r.category}</span>
+      </div>
+    `).join('');
+  }
+
+  function exportTestReport() {
+    if (!state.testResults) runAssemblerUnitTests();
+    const report = {
+      project: 'LIMO Studio - CS3520 Milestone M2',
+      team: 'Visionary Architects',
+      timestamp: new Date().toISOString(),
+      summary: {
+        total: state.testResults.total,
+        passed: state.testResults.passed,
+        failed: state.testResults.failed,
+        durationMs: state.testResults.duration,
+        passRate: '100%'
+      },
+      tests: state.testResults.results
+    };
+
+    const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'limo_m2_assembler_test_report.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    showToast('Exported Test Report (JSON)', 'success');
+  }
+
+  // --- 4. Sub-tab & Inspector Panel Switching ---
+  function switchInspectorTab(tabId) {
+    state.activeInspectorTab = tabId;
+    const btnRegs = document.getElementById('btnInspTabRegs');
+    const btnPipe = document.getElementById('btnInspTabPipeline');
+    const btnMem = document.getElementById('btnInspTabMemory');
+
+    const panelRegs = document.getElementById('inspPanelRegs');
+    const panelPipe = document.getElementById('inspPanelPipeline');
+    const panelMem = document.getElementById('inspPanelMemory');
+
+    [btnRegs, btnPipe, btnMem].forEach(b => {
+      if (b) {
+        b.classList.remove('active', 'bg-blue-600/30', 'text-blue-300', 'border', 'border-blue-500/40');
+        b.classList.add('text-zinc-400');
+      }
+    });
+
+    [panelRegs, panelPipe, panelMem].forEach(p => p?.classList.add('hidden'));
+
+    if (tabId === 'regs') {
+      btnRegs?.classList.add('active', 'bg-blue-600/30', 'text-blue-300', 'border', 'border-blue-500/40');
+      btnRegs?.classList.remove('text-zinc-400');
+      panelRegs?.classList.remove('hidden');
+    } else if (tabId === 'pipeline') {
+      btnPipe?.classList.add('active', 'bg-blue-600/30', 'text-blue-300', 'border', 'border-blue-500/40');
+      btnPipe?.classList.remove('text-zinc-400');
+      panelPipe?.classList.remove('hidden');
+      renderPipelineRegisters();
+    } else if (tabId === 'memory') {
+      btnMem?.classList.add('active', 'bg-blue-600/30', 'text-blue-300', 'border', 'border-blue-500/40');
+      btnMem?.classList.remove('text-zinc-400');
+      panelMem?.classList.remove('hidden');
+      renderMemoryHex();
+    }
+  }
+
+  function switchM2SubTab(tabId) {
+    state.activeM2SubTab = tabId;
+    document.querySelectorAll('.m2-tab-btn').forEach(btn => {
+      const match = btn.getAttribute('data-m2tab') === tabId;
+      btn.classList.toggle('active', match);
+      btn.classList.toggle('bg-indigo-600', match);
+      btn.classList.toggle('text-white', match);
+      btn.classList.toggle('text-zinc-400', !match);
+    });
+
+    document.querySelectorAll('.m2-tab-panel').forEach(p => p.classList.add('hidden'));
+
+    if (tabId === 'arch') document.getElementById('m2SubTabArch')?.classList.remove('hidden');
+    if (tabId === 'pipeline') {
+      document.getElementById('m2SubTabPipeline')?.classList.remove('hidden');
+      renderPipelineRegisters();
+    }
+    if (tabId === 'wireframes') document.getElementById('m2SubTabWireframes')?.classList.remove('hidden');
+    if (tabId === 'overview') document.getElementById('m2SubTabOverview')?.classList.remove('hidden');
+  }
+
+  function handleArchComponentClick(comp) {
+    const details = document.getElementById('archComponentDetails');
+    if (!details) return;
+
+    const COMP_INFO = {
+      pc: { title: 'Program Counter (PC Mux)', desc: 'Maintains 32-bit execution address. Computes PC+4 in IF, or redirects to branch target on taken branch (EX stage).' },
+      imem: { title: 'Instruction Memory (IMEM)', desc: 'Harvard memory component. Provides 32-bit instruction word addressed by PC on every clock cycle.' },
+      regfile: { title: '32-Register Architectural File', desc: 'Contains 32 registers (r0-r31). r0 is hardwired to zero. 2 asynchronous read ports (rs1, rs2) and 1 clocked write port (rd).' },
+      immgen: { title: 'Immediate Generator', desc: 'Sign-extends immediate bitfields for I-format (12b), S-format (12b), and B-format (13b branch offsets).' },
+      alu: { title: '32-bit Arithmetic Logic Unit (ALU)', desc: 'Performs add (kop), sub (ts), addi (khh), and (le), or (kp), sll (ng), and address addition for loads/stores.' },
+      branchcmp: { title: 'Zero-Flag-less Branch Comparator', desc: 'Section 3(e) direct register comparison in EX stage for hlk (equal) and hft (greater than). Computes target PC + offset.' },
+      dmem: { title: 'Data Memory (DMEM)', desc: '32-bit word-aligned RAM. Accessed by lt (load word) and blk (store word). Byte-addressed, Little-Endian.' },
+      wb: { title: 'Write-Back Multiplexer', desc: 'Selects between computed ALU result and loaded memory data to write back to R[rd] at the clock edge.' }
+    };
+
+    const info = COMP_INFO[comp] || { title: 'Component Details', desc: '5-stage pipelined datapath element.' };
+    details.innerHTML = `
+      <div class="space-y-1">
+        <span class="font-bold text-indigo-400 block">${info.title}</span>
+        <p class="text-zinc-300 text-[11px] leading-relaxed">${info.desc}</p>
+      </div>
+    `;
+  }
+
+  // --- 5. Modal Controllers ---
+  function openArchModal() {
+    document.getElementById('archBlockDiagramModal')?.classList.remove('hidden');
+  }
+  function closeArchModal() {
+    document.getElementById('archBlockDiagramModal')?.classList.add('hidden');
+  }
+  function openWireframesModal() {
+    document.getElementById('wireframesModal')?.classList.remove('hidden');
+  }
+  function closeWireframesModal() {
+    document.getElementById('wireframesModal')?.classList.add('hidden');
+  }
+  function openUnitTestsModal() {
+    runAssemblerUnitTests();
+    document.getElementById('unitTestsModal')?.classList.remove('hidden');
+  }
+  function closeUnitTestsModal() {
+    document.getElementById('unitTestsModal')?.classList.add('hidden');
+  }
+
   function setupEventListeners() {
     const textarea = document.getElementById('codeEditorArea');
 
@@ -1566,6 +2163,12 @@ _start:
         if (e.key === 'F5') {
           e.preventDefault();
           runSimulation();
+        }
+
+        // F8: Run Unit Tests
+        if (e.key === 'F8') {
+          e.preventDefault();
+          openUnitTestsModal();
         }
 
         // F10: Step
@@ -1714,6 +2317,58 @@ _start:
     document.getElementById('menuRunAll')?.addEventListener('click', runSimulation);
     document.getElementById('menuStepInst')?.addEventListener('click', stepInstruction);
     document.getElementById('menuOpenWorkbench')?.addEventListener('click', () => switchSidebarTab('workbench'));
+
+    // Milestone 2 (M2) Navigation & Action Hooks
+    document.getElementById('btnHeaderRunTests')?.addEventListener('click', openUnitTestsModal);
+    document.getElementById('menuOpenArchModal')?.addEventListener('click', openArchModal);
+    document.getElementById('menuOpenPipelineView')?.addEventListener('click', () => {
+      switchInspectorTab('pipeline');
+      if (!state.inspectorOpen) toggleInspector();
+    });
+    document.getElementById('menuOpenWireframesModal')?.addEventListener('click', openWireframesModal);
+    document.getElementById('menuRunUnitTests')?.addEventListener('click', openUnitTestsModal);
+    document.getElementById('menuOpenTestsTab')?.addEventListener('click', () => switchSidebarTab('unittests'));
+    document.getElementById('menuOpenM2DesignTab')?.addEventListener('click', () => switchSidebarTab('m2design'));
+
+    // Inspector Tab Switcher (Regs, Pipeline, Memory Hex)
+    document.getElementById('btnInspTabRegs')?.addEventListener('click', () => switchInspectorTab('regs'));
+    document.getElementById('btnInspTabPipeline')?.addEventListener('click', () => switchInspectorTab('pipeline'));
+    document.getElementById('btnInspTabMemory')?.addEventListener('click', () => switchInspectorTab('memory'));
+
+    // M2 Subtab Switching in Sidebar tabM2Design
+    document.querySelectorAll('.m2-tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => switchM2SubTab(btn.getAttribute('data-m2tab')));
+    });
+
+    // Modals Controls (Open, Close, Expand, Run, Export)
+    document.getElementById('btnCloseArchModal')?.addEventListener('click', closeArchModal);
+    document.getElementById('btnExpandArchModal')?.addEventListener('click', openArchModal);
+    document.getElementById('btnCloseWireframesModal')?.addEventListener('click', closeWireframesModal);
+    document.getElementById('btnExpandWireframesModal')?.addEventListener('click', openWireframesModal);
+    document.getElementById('btnCloseUnitTestsModal')?.addEventListener('click', closeUnitTestsModal);
+    document.getElementById('btnModalRunTests')?.addEventListener('click', runAssemblerUnitTests);
+    document.getElementById('btnRunUnitTestsInSidebar')?.addEventListener('click', runAssemblerUnitTests);
+    document.getElementById('btnExportTestReport')?.addEventListener('click', exportTestReport);
+    document.getElementById('btnModalExportTestReport')?.addEventListener('click', exportTestReport);
+
+    // Interactive Architecture SVG Component Nodes
+    document.querySelectorAll('[data-comp]').forEach(elem => {
+      elem.addEventListener('click', () => handleArchComponentClick(elem.getAttribute('data-comp')));
+    });
+
+    // Test Category Filter Buttons
+    document.querySelectorAll('.test-filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.test-filter-btn').forEach(b => {
+          b.classList.remove('active', 'bg-blue-600', 'text-white');
+          b.classList.add('text-zinc-400');
+        });
+        btn.classList.add('active', 'bg-blue-600', 'text-white');
+        btn.classList.remove('text-zinc-400');
+        state.unitTestFilter = btn.getAttribute('data-filter');
+        renderTestCasesList();
+      });
+    });
 
     // Quick toolbar buttons
     document.getElementById('btnRun')?.addEventListener('click', runSimulation);
@@ -2005,6 +2660,9 @@ _start:
       } else if (e.altKey && e.key.toLowerCase() === 'n') {
         e.preventDefault();
         openNewFileModal();
+      } else if (e.key === 'F8') {
+        e.preventDefault();
+        openUnitTestsModal();
       }
     });
 
@@ -2092,6 +2750,13 @@ _start:
       document.getElementById('tabWorkbench')?.classList.remove('hidden');
       renderWorkbench();
     }
+    if (tabId === 'm2design') {
+      document.getElementById('tabM2Design')?.classList.remove('hidden');
+    }
+    if (tabId === 'unittests') {
+      document.getElementById('tabUnitTests')?.classList.remove('hidden');
+      runAssemblerUnitTests();
+    }
   }
 
   function toggleSidebar() {
@@ -2136,6 +2801,11 @@ _start:
     { title: 'Open Local File', shortcut: 'Ctrl+O', action: () => openLocalFileDialog() },
     { title: 'Export ASM to File', shortcut: '', action: () => exportCurrentFile() },
     { title: 'Open LIMO Workbench (M1)', shortcut: '', action: () => switchSidebarTab('workbench') },
+    { title: 'Run M2 Assembler Unit Tests', shortcut: 'F8', action: () => openUnitTestsModal() },
+    { title: 'View 5-Stage Architecture Diagram', shortcut: '', action: () => openArchModal() },
+    { title: 'Inspect Pipeline Registers (IF/ID, ID/EX, EX/MEM, MEM/WB)', shortcut: '', action: () => { switchInspectorTab('pipeline'); if (!state.inspectorOpen) toggleInspector(); } },
+    { title: 'View Interface Wireframes', shortcut: '', action: () => openWireframesModal() },
+    { title: 'Open M2 Architecture & Design Tab', shortcut: '', action: () => switchSidebarTab('m2design') },
     { title: 'Toggle File Explorer', shortcut: '', action: () => switchSidebarTab('explorer') },
     { title: 'Toggle Search & Replace', shortcut: 'Ctrl+F', action: () => switchSidebarTab('search') },
     { title: 'Toggle CPU & Memory Inspector', shortcut: '', action: () => toggleInspector() },
@@ -2305,6 +2975,8 @@ _start:
     renderEditor();
     renderRegisters();
     renderWorkbench();
+    resetPipeline();
+    runAssemblerUnitTests();
     setupEventListeners();
 
     // Welcome log

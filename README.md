@@ -1,20 +1,59 @@
-# limo-Visionary-Architects
+# LIMO Studio — Visionary Architects
 
-## 📌 1. Project Overview (M1 Focus)
+> **CS3520 Computer Organisation and Architecture — AY 2026/2027**  
+> **National University of Lesotho**  
+> **Architecture:** LIMO (32-bit RV32I-derived load-store processor with Sesotho orthography)  
+> **Live Site (GitHub Pages):** [https://matseliso20.github.io/limo-Visionary-Architects/](https://matseliso20.github.io/limo-Visionary-Architects/)
+
+---
+
+## 🚀 Milestone 2 (M2) — Simulator Design & Working Assembler
+
+This repository contains the complete implementation for **Milestone 2 (M2)**:
+* **Architecture & Block Diagram:** 5-stage pipelined Harvard datapath (IF, ID, EX, MEM, WB) documented in [`docs/M2_SIMULATOR_DESIGN.md`](docs/M2_SIMULATOR_DESIGN.md) and interactively rendered as an interactive SVG block diagram with clickable datapath components.
+* **Pipeline-Register Data Model:** Bit-accurate pipeline register specifications (IF/ID [65b], ID/EX [171b], EX/MEM [139b], MEM/WB [136b]), latch conditions, bubble/flush signals, and TypeScript/JS interfaces in [`docs/PIPELINE_REGISTER_DATA_MODEL.md`](docs/PIPELINE_REGISTER_DATA_MODEL.md).
+* **Interface Wireframes:** Comprehensive UI/UX blueprints for the Primary IDE, 5-Stage Visualizer, Datapath Explorer, and Unit Test Runner documented in [`docs/WIREFRAMES.md`](docs/WIREFRAMES.md) and accessible via interactive modals on the site.
+* **Working Assembler with Unit Tests:** 29 automated test cases verifying all 10 Sesotho instructions, R/I/S/B encodings, M1 hand-encoded benchmarks, 32 register aliases, and signed immediate range bounds:
+  - CLI execution via Python: `python tests/test_assembler.py` (29 passed, 0 failed).
+  - CLI execution via Node.js: `node tests/assembler.test.js`.
+  - In-browser interactive test runner with category filtering, real-time metrics, and JSON report export (`F8` shortcut).
+* **GitHub Pages CI/CD:** Automated workflow in [`.github/workflows/pages.yml`](.github/workflows/pages.yml) deploying the application directly to GitHub Pages.
+* **Release Tag:** Tagged `m2`.
+
+---
+
+## 🧪 Running the Unit Tests
+
+### Option A: Via Browser UI
+1. Open the [Live Web Application](https://matseliso20.github.io/limo-Visionary-Architects/) (or open `index.html` locally).
+2. Click **Tests (F8)** in the top header or press <kbd>F8</kbd>.
+3. The interactive runner executes all 29 verification tests in real time, displaying pass/fail badges, hex encodings, category breakdowns, and JSON export.
+
+### Option B: Via Command Line (Python)
+```bash
+python tests/test_assembler.py
+```
+
+### Option C: Via Command Line (Node.js)
+```bash
+node tests/assembler.test.js
+```
+
+---
+
+## 📌 1. Project Overview (M1 & M2 Foundation)
 
 **LIMO** is a 32-bit load-store processor derived from **RISC-V (RV32I)**, featuring an assembly language written in **Sesotho** using Lesotho orthography.
 
-For **Milestone 1 (M1)**, our focus is strictly on establishing the core architecture foundation:
-* **ISA Specification (A1–A5):** Defining fixed 32-bit instruction formats ($R$, $I$, $S$, $B$), register file mappings with Sesotho names (e.g., `Ha ho letho` for zero), and assembly mnemonics.
-* **Design-Decision Log (A6):** Documenting trade-off analyses on register count, microarchitectural registers, branch resolution stages, and load-use stalls.
-* **Initial Programs:** Hand-encoding three benchmark Sesotho assembly programs into binary and hexadecimal formats.
-* **Repository Setup:** Configuring protected branches, team roles, and issue tracking boards.
+* **ISA Specification:** Defining fixed 32-bit instruction formats ($R$, $I$, $S$, $B$), register file mappings with Sesotho names (e.g., `Ha ho letho` / `Letho` for $r0$), and assembly mnemonics (`kop`, `ts`, `khh`, `le`, `kp`, `ng`, `lt`, `blk`, `hlk`, `hft`).
+* **Design-Decision Log:** Documenting trade-off analyses on register count (32 registers), zero-flag-less branch evaluation in EX stage (Section 3e), and load-use hazard interlocks.
+* **Initial Programs:** Three benchmark Sesotho assembly programs (`examples/01_sum_first_n.s`, `examples/02_factorial.s`, `examples/03_average.s`).
 
 ---
 
 ## 👥 2. Team Members
 
-The project is designed and developed by a group of seven collaborators assigned for CS3520:
+The project is designed and developed by Visionary Architects for CS3520:
 
 | Member | GitHub Username | Student Numbers | Role Context |
 | :--- | :--- | :--- | :--- |
@@ -26,6 +65,8 @@ The project is designed and developed by a group of seven collaborators assigned
 | **Matseliso Kheola** | `@Matseliso20` | 202202304 | Student Collaborator |
 | **Tumo Ts'ehla** | `@tsehlatumo-ops` | 202400550 | Student Collaborator |
 | **Thaane Moletsane** | `@THMN123` | 202322687 | Student Collaborator |
+
+---
 
 ## 3. Team Roles & Weekly Rotation Schedule
 
@@ -44,12 +85,25 @@ The project is designed and developed by a group of seven collaborators assigned
 ## 📁 4. Repository Structure
 
 ```text
-limo-group-project/
-├── .github/              
-├── docs/               
-├── examples/           
-├── src/                  
-├── tests/               
-├── AI_USE.md      
-└── README.md             
+limo-Visionary-Architects/
+├── .github/
+│   └── workflows/
+│       └── pages.yml              # GitHub Pages Automated Deployment
+├── docs/
+│   ├── M2_SIMULATOR_DESIGN.md     # Architecture & 5-Stage Datapath Block Diagram
+│   ├── PIPELINE_REGISTER_DATA_MODEL.md # Bit-Level Pipeline Register Specs
+│   └── WIREFRAMES.md              # UI/UX Wireframe Blueprints
+├── examples/                      # Benchmark Sesotho Assembly Programs
+│   ├── 01_sum_first_n.s
+│   ├── 02_factorial.s
+│   └── 03_average.s
+├── tests/
+│   ├── assembler.test.js          # 29 Automated Unit Tests (JS / Browser / Node)
+│   └── test_assembler.py          # Python Unit Test Suite
+├── app.js                         # Core Simulator & Assembler Engine
+├── index.html                     # Web IDE, Block Diagram & Visualizer
+├── style.css                      # Custom Styles & Theme Overrides
+├── AI_USE.md                      # AI Transparency & Ethics Log
+└── README.md                      # Project Documentation
+```
 

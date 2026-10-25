@@ -165,6 +165,60 @@
             </button>
           </div>
         </div>
+
+        <!-- M2 Simulator Design Menu -->
+        <div class="relative menu-dropdown" data-menu="m2">
+          <button type="button" class="menu-btn px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1 cursor-pointer hover:bg-zinc-800/80 hover:text-white text-indigo-300 font-semibold">
+            <span class="flex items-center gap-1">
+              <span class="w-2 h-2 rounded-full bg-indigo-400 animate-ping"></span>
+              <span>M2 Simulator</span>
+            </span>
+            <svg class="w-3 h-3 text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="dropdown-panel hidden absolute left-0 top-full mt-1.5 bg-zinc-900/95 backdrop-blur-xl border border-indigo-500/30 shadow-2xl rounded-2xl p-1.5 min-w-[240px] z-50 text-xs flex flex-col gap-0.5">
+            <button type="button" id="menuOpenArchModal" class="px-3 py-2 rounded-xl hover:bg-indigo-600 hover:text-white text-left flex items-center gap-2 transition cursor-pointer">
+              <svg class="w-3.5 h-3.5 text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 15h2"/><path d="M20 9h2"/></svg>
+              <span>Architecture & Block Diagram</span>
+            </button>
+            <button type="button" id="menuOpenPipelineView" class="px-3 py-2 rounded-xl hover:bg-indigo-600 hover:text-white text-left flex items-center gap-2 transition cursor-pointer">
+              <svg class="w-3.5 h-3.5 text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="4" height="6" x="2" y="9" rx="1"/><rect width="4" height="6" x="9" y="9" rx="1"/><rect width="4" height="6" x="16" y="9" rx="1"/></svg>
+              <span>Pipeline-Register Data Model</span>
+            </button>
+            <button type="button" id="menuOpenWireframesModal" class="px-3 py-2 rounded-xl hover:bg-indigo-600 hover:text-white text-left flex items-center gap-2 transition cursor-pointer">
+              <svg class="w-3.5 h-3.5 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+              <span>Interface Wireframes</span>
+            </button>
+            <div class="border-t border-zinc-800 my-1 rounded-full"></div>
+            <button type="button" id="menuOpenM2DesignTab" class="px-3 py-2 rounded-xl hover:bg-indigo-600 hover:text-white text-left flex items-center justify-between transition cursor-pointer">
+              <span class="flex items-center gap-2">
+                <svg class="w-3.5 h-3.5 text-purple-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                <span>M2 Design Documentation</span>
+              </span>
+              <span class="text-[9px] bg-indigo-500/20 text-indigo-300 px-1.5 py-0.5 rounded font-mono">M2 Docs</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Tests Menu -->
+        <div class="relative menu-dropdown" data-menu="tests">
+          <button type="button" class="menu-btn px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1 cursor-pointer hover:bg-zinc-800/80 hover:text-white text-emerald-400 font-semibold">
+            <span>Tests</span>
+            <svg class="w-3 h-3 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="dropdown-panel hidden absolute left-0 top-full mt-1.5 bg-zinc-900/95 backdrop-blur-xl border border-emerald-500/30 shadow-2xl rounded-2xl p-1.5 min-w-[230px] z-50 text-xs flex flex-col gap-0.5">
+            <button type="button" id="menuRunUnitTests" class="px-3 py-2 rounded-xl hover:bg-emerald-600 hover:text-white text-left flex justify-between items-center transition cursor-pointer">
+              <span class="flex items-center gap-2">
+                <svg class="w-3.5 h-3.5 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                <span>Run Assembler Unit Tests</span>
+              </span>
+              <span class="text-emerald-400 font-mono text-[10px] bg-emerald-500/10 px-1.5 py-0.5 rounded-md">F8</span>
+            </button>
+            <button type="button" id="menuOpenTestsTab" class="px-3 py-2 rounded-xl hover:bg-emerald-600 hover:text-white text-left flex items-center gap-2 transition cursor-pointer">
+              <svg class="w-3.5 h-3.5 text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              <span>View Test Suite Runner</span>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -175,6 +229,13 @@
         <svg class="w-3.5 h-3.5 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
         <span class="hidden lg:inline text-zinc-300">Command Palette</span>
         <span class="text-[10px] bg-zinc-700/80 px-1.5 py-0.5 rounded-lg text-zinc-400 font-mono">⌘P</span>
+      </button>
+
+      <!-- Unit Tests Button (M2) -->
+      <button type="button" id="btnHeaderRunTests" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 font-medium transition shadow-md shadow-purple-900/20 active:scale-95 cursor-pointer" title="Run Assembler Unit Tests (F8)">
+        <svg class="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>
+        <span>Tests</span>
+        <span class="text-[10px] bg-purple-800/50 px-1 rounded-md hidden sm:inline font-mono">F8</span>
       </button>
 
       <!-- Step Button -->
@@ -217,9 +278,21 @@
           <span class="active-indicator hidden absolute -left-1 top-2 bottom-2 w-1.5 bg-blue-400 rounded-r-full shadow-sm shadow-blue-400/50"></span>
         </button>
 
+        <!-- M2 Simulator Design Button (Milestone M2 Deliverable) -->
+        <button type="button" class="activity-btn relative p-2.5 rounded-xl transition-all duration-200 cursor-pointer flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-800/60" data-tab="m2design" title="M2 Simulator Design: Architecture, Block Diagram, Pipeline & Wireframes">
+          <svg class="w-5 h-5 text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 15h2"/><path d="M20 9h2"/><path d="M9 2v2"/><path d="M9 20v2"/></svg>
+          <span class="active-indicator hidden absolute -left-1 top-2 bottom-2 w-1.5 bg-indigo-400 rounded-r-full shadow-sm shadow-indigo-400/50"></span>
+        </button>
+
+        <!-- Assembler Unit Tests Button (Milestone M2 Deliverable) -->
+        <button type="button" class="activity-btn relative p-2.5 rounded-xl transition-all duration-200 cursor-pointer flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-800/60" data-tab="unittests" title="Assembler Unit Tests Suite (M2)">
+          <svg class="w-5 h-5 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>
+          <span class="active-indicator hidden absolute -left-1 top-2 bottom-2 w-1.5 bg-emerald-400 rounded-r-full shadow-sm shadow-emerald-400/50"></span>
+        </button>
+
         <!-- LIMO Workbench Button (CS3520 Milestone M1) -->
         <button type="button" class="activity-btn relative p-2.5 rounded-xl transition-all duration-200 cursor-pointer flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-800/60" data-tab="workbench" title="LIMO ISA & Translation Workbench (CS3520 M1)">
-          <svg class="w-5 h-5 text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 15h2"/><path d="M20 9h2"/><path d="M9 2v2"/><path d="M9 20v2"/></svg>
+          <svg class="w-5 h-5 text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
           <span class="active-indicator hidden absolute -left-1 top-2 bottom-2 w-1.5 bg-blue-400 rounded-r-full shadow-sm shadow-blue-400/50"></span>
         </button>
 
@@ -455,6 +528,354 @@
           </div>
         </div>
       </div>
+
+      <!-- TAB 6: M2 Simulator Design (Milestone M2 Deliverable) -->
+      <div id="tabM2Design" class="sidebar-tab-content hidden flex-1 flex flex-col p-3 space-y-3 overflow-y-auto">
+        <div class="flex items-center justify-between px-3 py-2 bg-gradient-to-r from-indigo-900/50 via-purple-900/40 to-blue-900/40 rounded-xl border border-indigo-500/40 shadow-sm">
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-indigo-400 animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 15h2"/><path d="M20 9h2"/>
+            </svg>
+            <span class="font-bold text-white text-xs">M2 Simulator Design</span>
+          </div>
+          <span class="text-[10px] bg-indigo-500/20 text-indigo-300 font-mono px-2 py-0.5 rounded-full border border-indigo-500/40 font-bold">M2 SPEC</span>
+        </div>
+
+        <!-- M2 Sub-Tabs Navigation -->
+        <div class="flex items-center gap-1 p-1 bg-zinc-800/70 rounded-xl border border-zinc-700/60 text-[10px] font-medium overflow-x-auto no-scrollbar">
+          <button type="button" class="m2-tab-btn active px-2.5 py-1 rounded-lg bg-indigo-600 text-white transition cursor-pointer" data-m2tab="arch">Block Diagram</button>
+          <button type="button" class="m2-tab-btn px-2.5 py-1 rounded-lg text-zinc-400 hover:text-white transition cursor-pointer" data-m2tab="pipeline">Pipeline Regs</button>
+          <button type="button" class="m2-tab-btn px-2.5 py-1 rounded-lg text-zinc-400 hover:text-white transition cursor-pointer" data-m2tab="wireframes">Wireframes</button>
+          <button type="button" class="m2-tab-btn px-2.5 py-1 rounded-lg text-zinc-400 hover:text-white transition cursor-pointer" data-m2tab="overview">Overview</button>
+        </div>
+
+        <!-- M2 Subtab 1: Architecture & 5-Stage Datapath Block Diagram -->
+        <div id="m2SubTabArch" class="m2-tab-panel space-y-2.5 text-xs">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-semibold text-zinc-300 uppercase tracking-wider">5-Stage Core Pipeline</span>
+            <button type="button" id="btnExpandArchModal" class="text-[10px] text-indigo-400 hover:text-indigo-300 font-medium flex items-center gap-1 cursor-pointer">
+              <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+              <span>Fullscreen</span>
+            </button>
+          </div>
+
+          <!-- Interactive Microarchitecture Pipeline Flow -->
+          <div class="p-2.5 bg-zinc-950/70 rounded-2xl border border-zinc-800/80 space-y-2">
+            <div class="grid grid-cols-5 gap-1 text-[9px] font-mono text-center">
+              <div class="p-1 rounded-lg stage-pill-if font-bold">1. IF</div>
+              <div class="p-1 rounded-lg stage-pill-id font-bold">2. ID</div>
+              <div class="p-1 rounded-lg stage-pill-ex font-bold">3. EX</div>
+              <div class="p-1 rounded-lg stage-pill-mem font-bold">4. MEM</div>
+              <div class="p-1 rounded-lg stage-pill-wb font-bold">5. WB</div>
+            </div>
+
+            <!-- Mini SVG Datapath Schema -->
+            <div class="relative bg-zinc-900/90 p-2 rounded-xl border border-zinc-800 text-[10px] font-mono overflow-hidden">
+              <svg viewBox="0 0 420 170" class="w-full h-auto text-zinc-300 select-none">
+                <!-- IF Stage -->
+                <rect x="5" y="45" width="60" height="40" rx="6" fill="#1e293b" stroke="#3b82f6" stroke-width="1.5" class="arch-node" data-comp="pc"/>
+                <text x="35" y="65" text-anchor="middle" font-size="9" fill="#93c5fd" font-weight="bold">PC Mux</text>
+                <text x="35" y="77" text-anchor="middle" font-size="8" fill="#64748b">PC + 4</text>
+
+                <rect x="5" y="95" width="60" height="45" rx="6" fill="#1e293b" stroke="#3b82f6" stroke-width="1.5" class="arch-node" data-comp="imem"/>
+                <text x="35" y="118" text-anchor="middle" font-size="9" fill="#93c5fd" font-weight="bold">IMEM</text>
+                <text x="35" y="130" text-anchor="middle" font-size="7" fill="#64748b">32-bit Inst</text>
+
+                <!-- IF/ID Register -->
+                <rect x="75" y="35" width="14" height="115" rx="3" fill="#3b82f6" fill-opacity="0.3" stroke="#3b82f6" stroke-width="1.5"/>
+                <text x="82" y="95" text-anchor="middle" font-size="7" fill="#bfdbfe" font-weight="bold" transform="rotate(-90 82 95)">IF / ID</text>
+
+                <!-- ID Stage -->
+                <rect x="100" y="45" width="65" height="45" rx="6" fill="#2e1065" stroke="#a855f7" stroke-width="1.5" class="arch-node" data-comp="regfile"/>
+                <text x="132" y="68" text-anchor="middle" font-size="9" fill="#d8b4fe" font-weight="bold">RegFile</text>
+                <text x="132" y="80" text-anchor="middle" font-size="7" fill="#a855f7">32 Regs (r0=0)</text>
+
+                <rect x="100" y="100" width="65" height="40" rx="6" fill="#2e1065" stroke="#a855f7" stroke-width="1.5" class="arch-node" data-comp="immgen"/>
+                <text x="132" y="122" text-anchor="middle" font-size="9" fill="#d8b4fe" font-weight="bold">Imm Gen</text>
+                <text x="132" y="133" text-anchor="middle" font-size="7" fill="#a855f7">I, S, B Types</text>
+
+                <!-- ID/EX Register -->
+                <rect x="175" y="35" width="14" height="115" rx="3" fill="#a855f7" fill-opacity="0.3" stroke="#a855f7" stroke-width="1.5"/>
+                <text x="182" y="95" text-anchor="middle" font-size="7" fill="#e9d5ff" font-weight="bold" transform="rotate(-90 182 95)">ID / EX</text>
+
+                <!-- EX Stage -->
+                <polygon points="200,45 255,60 255,85 200,100 200,78 215,72 200,67" fill="#451a03" stroke="#f59e0b" stroke-width="1.5" class="arch-node" data-comp="alu"/>
+                <text x="230" y="75" text-anchor="middle" font-size="9" fill="#fde68a" font-weight="bold">ALU</text>
+
+                <rect x="200" y="110" width="55" height="35" rx="6" fill="#451a03" stroke="#f59e0b" stroke-width="1.5" class="arch-node" data-comp="branchcmp"/>
+                <text x="227" y="128" text-anchor="middle" font-size="8" fill="#fde68a" font-weight="bold">Branch Target</text>
+                <text x="227" y="139" text-anchor="middle" font-size="7" fill="#b45309">hlk / hft (EX)</text>
+
+                <!-- EX/MEM Register -->
+                <rect x="268" y="35" width="14" height="115" rx="3" fill="#f59e0b" fill-opacity="0.3" stroke="#f59e0b" stroke-width="1.5"/>
+                <text x="275" y="95" text-anchor="middle" font-size="7" fill="#fef3c7" font-weight="bold" transform="rotate(-90 275 95)">EX / MEM</text>
+
+                <!-- MEM Stage -->
+                <rect x="292" y="55" width="60" height="75" rx="6" fill="#064e3b" stroke="#10b981" stroke-width="1.5" class="arch-node" data-comp="dmem"/>
+                <text x="322" y="88" text-anchor="middle" font-size="9" fill="#a7f3d0" font-weight="bold">DMEM</text>
+                <text x="322" y="100" text-anchor="middle" font-size="8" fill="#34d399">lt / blk</text>
+                <text x="322" y="112" text-anchor="middle" font-size="7" fill="#059669">Word Memory</text>
+
+                <!-- MEM/WB Register -->
+                <rect x="362" y="35" width="14" height="115" rx="3" fill="#10b981" fill-opacity="0.3" stroke="#10b981" stroke-width="1.5"/>
+                <text x="369" y="95" text-anchor="middle" font-size="7" fill="#d1fae5" font-weight="bold" transform="rotate(-90 369 95)">MEM / WB</text>
+
+                <!-- WB Stage Mux -->
+                <rect x="386" y="65" width="28" height="55" rx="6" fill="#831843" stroke="#ec4899" stroke-width="1.5" class="arch-node" data-comp="wb"/>
+                <text x="400" y="92" text-anchor="middle" font-size="8" fill="#fbcfe8" font-weight="bold">WB</text>
+                <text x="400" y="104" text-anchor="middle" font-size="7" fill="#f472b6">Mux</text>
+
+                <!-- Forwarding & Hazard Unit Top Bar -->
+                <rect x="5" y="8" width="410" height="20" rx="4" fill="#18181b" stroke="#6366f1" stroke-dasharray="3 2" stroke-width="1"/>
+                <text x="210" y="21" text-anchor="middle" font-size="8" fill="#c7d2fe" font-weight="bold">Hazard Detection & Forwarding Units (Load-Use Stall & EX/MEM Forwarding)</text>
+              </svg>
+            </div>
+
+            <!-- Component Details Interactive Box -->
+            <div id="archComponentDetails" class="p-2.5 bg-zinc-900/80 rounded-xl border border-zinc-800 text-[11px] space-y-1">
+              <span class="font-bold text-indigo-400 block">Click any component block above</span>
+              <p class="text-zinc-400 text-[10px] leading-relaxed">
+                Explore inputs, outputs, datapath connections, and control signal roles for the 5-stage LIMO pipeline.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- M2 Subtab 2: Pipeline Registers Data Model -->
+        <div id="m2SubTabPipeline" class="m2-tab-panel hidden space-y-2.5 text-xs">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-semibold text-zinc-300 uppercase tracking-wider">Inter-Stage Registers</span>
+            <span class="text-[10px] text-zinc-400 font-mono">clk edge triggered</span>
+          </div>
+
+          <!-- 4 Pipeline Registers Live Preview -->
+          <div class="space-y-2 font-mono text-[11px]">
+            <!-- IF/ID Card -->
+            <div class="p-2.5 rounded-xl bg-blue-950/20 border border-blue-500/30 space-y-1">
+              <div class="flex items-center justify-between text-[10px]">
+                <span class="font-bold text-blue-400 flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-blue-400"></span>
+                  IF / ID Register (65 bits)
+                </span>
+                <span id="m2IfIdValid" class="text-zinc-500 font-sans">valid: false</span>
+              </div>
+              <div class="text-zinc-300 text-[10px] flex justify-between">
+                <span>PC: <strong id="m2IfIdPC" class="text-white">0x00400000</strong></span>
+                <span>Inst: <strong id="m2IfIdHex" class="text-yellow-400">0x00000013</strong></span>
+              </div>
+              <div id="m2IfIdAsm" class="text-[10px] text-zinc-400 truncate font-sans">nop</div>
+            </div>
+
+            <!-- ID/EX Card -->
+            <div class="p-2.5 rounded-xl bg-purple-950/20 border border-purple-500/30 space-y-1">
+              <div class="flex items-center justify-between text-[10px]">
+                <span class="font-bold text-purple-400 flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-purple-400"></span>
+                  ID / EX Register (171 bits)
+                </span>
+                <span id="m2IdExValid" class="text-zinc-500 font-sans">valid: false</span>
+              </div>
+              <div class="text-zinc-300 text-[10px] grid grid-cols-2 gap-1">
+                <div>rs1_val: <strong id="m2IdExRs1" class="text-white">0</strong></div>
+                <div>rs2_val: <strong id="m2IdExRs2" class="text-white">0</strong></div>
+                <div>imm: <strong id="m2IdExImm" class="text-yellow-400">0</strong></div>
+                <div>rd: <strong id="m2IdExRd" class="text-emerald-400">r0</strong></div>
+              </div>
+              <div class="text-[9px] text-zinc-400 pt-1 border-t border-purple-900/40 flex justify-between font-sans">
+                <span>Signals: <span id="m2IdExSignals" class="text-purple-300">RegW=0, MemR=0, MemW=0</span></span>
+              </div>
+            </div>
+
+            <!-- EX/MEM Card -->
+            <div class="p-2.5 rounded-xl bg-amber-950/20 border border-amber-500/30 space-y-1">
+              <div class="flex items-center justify-between text-[10px]">
+                <span class="font-bold text-amber-400 flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                  EX / MEM Register (139 bits)
+                </span>
+                <span id="m2ExMemValid" class="text-zinc-500 font-sans">valid: false</span>
+              </div>
+              <div class="text-zinc-300 text-[10px] flex justify-between">
+                <span>aluResult: <strong id="m2ExMemAlu" class="text-yellow-400">0</strong></span>
+                <span>dest: <strong id="m2ExMemRd" class="text-emerald-400">r0</strong></span>
+              </div>
+            </div>
+
+            <!-- MEM/WB Card -->
+            <div class="p-2.5 rounded-xl bg-emerald-950/20 border border-emerald-500/30 space-y-1">
+              <div class="flex items-center justify-between text-[10px]">
+                <span class="font-bold text-emerald-400 flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                  MEM / WB Register (136 bits)
+                </span>
+                <span id="m2MemWbValid" class="text-zinc-500 font-sans">valid: false</span>
+              </div>
+              <div class="text-zinc-300 text-[10px] flex justify-between">
+                <span>writeData: <strong id="m2MemWbData" class="text-emerald-300">0</strong></span>
+                <span>to: <strong id="m2MemWbRd" class="text-white">r0</strong></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- M2 Subtab 3: Interface Wireframes Gallery -->
+        <div id="m2SubTabWireframes" class="m2-tab-panel hidden space-y-2.5 text-xs">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-semibold text-zinc-300 uppercase tracking-wider">UI / UX Wireframes</span>
+            <button type="button" id="btnExpandWireframesModal" class="text-[10px] text-cyan-400 hover:text-cyan-300 font-medium flex items-center gap-1 cursor-pointer">
+              <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+              <span>Full View</span>
+            </button>
+          </div>
+
+          <div class="space-y-2">
+            <!-- Wireframe Card 1: IDE Wireframe -->
+            <div class="p-2.5 bg-zinc-950/70 rounded-xl border border-zinc-800 space-y-1.5">
+              <div class="font-semibold text-cyan-400 text-[11px] flex items-center justify-between">
+                <span>1. IDE Workspace Layout</span>
+                <span class="text-[9px] bg-cyan-900/40 text-cyan-300 px-1.5 py-0.5 rounded font-mono">Responsive</span>
+              </div>
+              <div class="blueprint-box p-2 rounded-lg font-mono text-[9px] text-cyan-200/90 leading-tight">
+                [Top Bar: Menus + Run/Step/Tests]<br>
+                [Activity Dock | Sidebar | Editor Canvas | CPU Inspector]<br>
+                [Bottom Drawer: Terminal CLI & Logs]
+              </div>
+            </div>
+
+            <!-- Wireframe Card 2: Pipeline Registers Wireframe -->
+            <div class="p-2.5 bg-zinc-950/70 rounded-xl border border-zinc-800 space-y-1.5">
+              <div class="font-semibold text-amber-400 text-[11px] flex items-center justify-between">
+                <span>2. Pipeline Visualizer</span>
+                <span class="text-[9px] bg-amber-900/40 text-amber-300 px-1.5 py-0.5 rounded font-mono">5-Stage</span>
+              </div>
+              <div class="blueprint-box p-2 rounded-lg font-mono text-[9px] text-amber-200/90 leading-tight">
+                [IF Fetch] ==&gt; [ID Decode] ==&gt; [EX Exec] ==&gt; [MEM Data] ==&gt; [WB Dest]<br>
+                Cycle Counter · Hazard Bubbles · Branch Flushing
+              </div>
+            </div>
+
+            <!-- Wireframe Card 3: Unit Tests Wireframe -->
+            <div class="p-2.5 bg-zinc-950/70 rounded-xl border border-zinc-800 space-y-1.5">
+              <div class="font-semibold text-emerald-400 text-[11px] flex items-center justify-between">
+                <span>3. Assembler Test Runner</span>
+                <span class="text-[9px] bg-emerald-900/40 text-emerald-300 px-1.5 py-0.5 rounded font-mono">Automated</span>
+              </div>
+              <div class="blueprint-box p-2 rounded-lg font-mono text-[9px] text-emerald-200/90 leading-tight">
+                [Summary Metrics: 29 Tests | 100% Pass | 12ms]<br>
+                [Filters: Benchmarks, R, I, S, B, Error Handling]<br>
+                [Test Assertions & JSON Report Export]
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- M2 Subtab 4: Overview & Requirements Checklist -->
+        <div id="m2SubTabOverview" class="m2-tab-panel hidden space-y-2 text-zinc-300 text-xs">
+          <div class="p-3 bg-zinc-800/60 rounded-2xl border border-zinc-700/60 space-y-2">
+            <h4 class="font-bold text-white text-xs flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <span>Milestone M2 Compliance Checklist</span>
+            </h4>
+            <div class="space-y-1.5 text-[11px] text-zinc-300">
+              <div class="flex items-center gap-2 text-emerald-400">
+                <span>✓</span>
+                <span>Simulator Design & Architecture Block Diagram</span>
+              </div>
+              <div class="flex items-center gap-2 text-emerald-400">
+                <span>✓</span>
+                <span>Pipeline-Register Data Model (IF/ID, ID/EX, EX/MEM, MEM/WB)</span>
+              </div>
+              <div class="flex items-center gap-2 text-emerald-400">
+                <span>✓</span>
+                <span>Interface Wireframes Specification</span>
+              </div>
+              <div class="flex items-center gap-2 text-emerald-400">
+                <span>✓</span>
+                <span>Working Assembler with Unit Tests</span>
+              </div>
+              <div class="flex items-center gap-2 text-emerald-400">
+                <span>✓</span>
+                <span>GitHub Pages Deployment Workflow</span>
+              </div>
+              <div class="flex items-center gap-2 text-emerald-400">
+                <span>✓</span>
+                <span>Git Tag `m2` Ready</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 7: Assembler Unit Tests Suite (Milestone M2 Deliverable) -->
+      <div id="tabUnitTests" class="sidebar-tab-content hidden flex-1 flex flex-col p-3 space-y-3 overflow-y-auto">
+        <div class="flex items-center justify-between px-3 py-2 bg-gradient-to-r from-emerald-900/50 via-teal-900/40 to-blue-900/40 rounded-xl border border-emerald-500/40 shadow-sm">
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/>
+            </svg>
+            <span class="font-bold text-white text-xs">Assembler Unit Tests</span>
+          </div>
+          <span class="text-[10px] bg-emerald-500/20 text-emerald-300 font-mono px-2 py-0.5 rounded-full border border-emerald-500/40 font-bold">M2 TESTS</span>
+        </div>
+
+        <!-- Run Tests Action Button -->
+        <button type="button" id="btnRunUnitTestsInSidebar" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2 transition shadow-md shadow-emerald-900/30 active:scale-95 cursor-pointer text-xs">
+          <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+          <span>Run All Unit Tests</span>
+          <span class="text-[10px] bg-emerald-700/60 px-1.5 py-0.5 rounded-md font-mono">F8</span>
+        </button>
+
+        <!-- Summary Metric Cards (4 Grid) -->
+        <div class="grid grid-cols-2 gap-2 text-center font-mono">
+          <div class="p-2 rounded-xl bg-zinc-800/60 border border-zinc-700/50">
+            <div class="text-[10px] text-zinc-400 font-sans">Total Tests</div>
+            <div id="testsMetricTotal" class="text-sm font-bold text-white mt-0.5">29</div>
+          </div>
+          <div class="p-2 rounded-xl bg-emerald-950/40 border border-emerald-500/40">
+            <div class="text-[10px] text-emerald-400 font-sans">Passed</div>
+            <div id="testsMetricPassed" class="text-sm font-bold text-emerald-300 mt-0.5">29</div>
+          </div>
+          <div class="p-2 rounded-xl bg-red-950/30 border border-red-500/30">
+            <div class="text-[10px] text-red-400 font-sans">Failed</div>
+            <div id="testsMetricFailed" class="text-sm font-bold text-red-400 mt-0.5">0</div>
+          </div>
+          <div class="p-2 rounded-xl bg-zinc-800/60 border border-zinc-700/50">
+            <div class="text-[10px] text-zinc-400 font-sans">Duration</div>
+            <div id="testsMetricTime" class="text-sm font-bold text-blue-400 mt-0.5">-- ms</div>
+          </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="space-y-1">
+          <div class="flex items-center justify-between text-[10px] text-zinc-400 font-mono">
+            <span>Pass Rate</span>
+            <span id="testsPassRateLabel" class="text-emerald-400 font-bold">100%</span>
+          </div>
+          <div class="h-2 w-full bg-zinc-800 rounded-full overflow-hidden border border-zinc-700/50">
+            <div id="testsProgressBar" class="h-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-300 rounded-full" style="width: 100%;"></div>
+          </div>
+        </div>
+
+        <!-- Test Filter Pills -->
+        <div class="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5 text-[9px] font-mono">
+          <button type="button" class="test-filter-pill active px-2 py-0.5 rounded-lg bg-zinc-700 text-white cursor-pointer" data-filter="all">All</button>
+          <button type="button" class="test-filter-pill px-2 py-0.5 rounded-lg text-zinc-400 hover:text-white cursor-pointer" data-filter="M1 Benchmarks">Benchmarks</button>
+          <button type="button" class="test-filter-pill px-2 py-0.5 rounded-lg text-zinc-400 hover:text-white cursor-pointer" data-filter="R-Format">R-Type</button>
+          <button type="button" class="test-filter-pill px-2 py-0.5 rounded-lg text-zinc-400 hover:text-white cursor-pointer" data-filter="I-Format">I-Type</button>
+          <button type="button" class="test-filter-pill px-2 py-0.5 rounded-lg text-zinc-400 hover:text-white cursor-pointer" data-filter="S-Format">S-Type</button>
+          <button type="button" class="test-filter-pill px-2 py-0.5 rounded-lg text-zinc-400 hover:text-white cursor-pointer" data-filter="B-Format">B-Type</button>
+          <button type="button" class="test-filter-pill px-2 py-0.5 rounded-lg text-zinc-400 hover:text-white cursor-pointer" data-filter="Error Handling">Errors</button>
+        </div>
+
+        <!-- Test Cases List Container -->
+        <div id="testCasesListContainer" class="flex-1 space-y-1.5 overflow-y-auto max-h-72 font-mono text-[10px] pr-1"></div>
+
+        <!-- Export Report Action -->
+        <button type="button" id="btnExportTestReport" class="w-full py-1.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 rounded-xl text-[11px] font-medium flex items-center justify-center gap-1.5 transition cursor-pointer">
+          <svg class="w-3.5 h-3.5 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span>Export Test Report (JSON)</span>
+        </button>
+      </div>
     </div>
 
     <!-- Center Workspace Area (Editor + Terminal) -->
@@ -557,30 +978,39 @@
         <div class="w-0.5 h-8 bg-zinc-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
       </div>
 
-      <!-- Top Header -->
-      <div class="h-10 bg-zinc-950/70 px-3.5 flex items-center justify-between border-b border-zinc-800/80 font-semibold text-zinc-300">
-        <span class="flex items-center gap-2 text-blue-400 font-medium truncate">
-          <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/></svg>
-          <span id="inspectorTitle">LIMO CPU & REGISTERS</span>
-        </span>
+      <!-- Top Header Tabs -->
+      <div class="h-10 bg-zinc-950/80 px-2 flex items-center justify-between border-b border-zinc-800/80 text-xs shrink-0 select-none">
+        <div class="flex items-center space-x-1">
+          <button type="button" id="btnInspTabRegs" class="insp-tab-btn active px-2.5 py-1 rounded-lg bg-blue-600/30 text-blue-300 font-semibold border border-blue-500/40 text-[11px] transition cursor-pointer">
+            32 Regs
+          </button>
+          <button type="button" id="btnInspTabPipeline" class="insp-tab-btn px-2.5 py-1 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800/60 font-semibold text-[11px] transition cursor-pointer flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-indigo-400"></span>
+            <span>Pipeline</span>
+          </button>
+          <button type="button" id="btnInspTabMemory" class="insp-tab-btn px-2.5 py-1 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800/60 font-semibold text-[11px] transition cursor-pointer">
+            Memory
+          </button>
+        </div>
+
         <div class="flex items-center gap-1.5 shrink-0">
-          <span class="text-[10px] bg-blue-500/15 border border-blue-500/30 text-blue-300 px-2 py-0.5 rounded-full font-mono">LIMO 32-bit</span>
-          <button type="button" id="btnCloseInspector" class="p-1 rounded-lg hover:bg-zinc-800 text-zinc-400 hover:text-white transition cursor-pointer ml-1" title="Close Inspector">
+          <button type="button" id="btnToggleHexDec" class="text-[10px] font-mono bg-zinc-800 hover:bg-zinc-700 text-yellow-400 px-2 py-0.5 rounded-lg border border-zinc-700/60 transition cursor-pointer" title="Toggle Hex / Decimal">
+            HEX
+          </button>
+          <button type="button" id="btnCloseInspector" class="p-1 rounded-lg hover:bg-zinc-800 text-zinc-400 hover:text-white transition cursor-pointer ml-0.5" title="Close Inspector">
             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
           </button>
         </div>
       </div>
 
-      <!-- Registers Grid (32 Sesotho LIMO Registers) -->
-      <div class="p-3 border-b border-zinc-800/80 bg-zinc-900/70 space-y-3 max-h-[58vh] overflow-y-auto">
+      <!-- PANEL 1: 32 Architectural Registers -->
+      <div id="inspPanelRegs" class="insp-subpanel flex-1 flex flex-col p-3 space-y-3 overflow-y-auto bg-zinc-900/70">
         <div class="flex items-center justify-between text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
           <span class="flex items-center gap-1.5">
             <svg class="w-3.5 h-3.5 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="4" height="6" x="2" y="9" rx="1"/><rect width="4" height="6" x="9" y="9" rx="1"/><rect width="4" height="6" x="16" y="9" rx="1"/></svg>
             <span>32 Registers (Sesotho)</span>
           </span>
-          <button type="button" id="btnToggleHexDec" class="text-[10px] font-mono bg-zinc-800 hover:bg-zinc-700 text-yellow-400 px-2 py-0.5 rounded-lg border border-zinc-700/60 transition cursor-pointer">
-            HEX
-          </button>
+          <span class="text-[10px] text-zinc-500 font-mono">r0 = Letho</span>
         </div>
 
         <div id="registersGridContainer" class="grid grid-cols-2 gap-2 font-mono text-[11px]"></div>
@@ -596,8 +1026,97 @@
         </div>
       </div>
 
-      <!-- Memory Hex Dump Viewer -->
-      <div class="flex-1 flex flex-col p-3 space-y-2 overflow-hidden bg-zinc-900/50">
+      <!-- PANEL 2: Live 5-Stage Pipeline Registers (M2 Requirement) -->
+      <div id="inspPanelPipeline" class="insp-subpanel hidden flex-1 flex flex-col p-3 space-y-3 overflow-y-auto bg-zinc-900/70 text-xs">
+        <!-- Pipeline Status Banner -->
+        <div class="p-2.5 bg-zinc-950/80 rounded-xl border border-zinc-800 space-y-1.5 font-mono text-[11px]">
+          <div class="flex items-center justify-between">
+            <span class="text-zinc-400 font-sans font-semibold text-[11px]">Pipeline Status:</span>
+            <span id="pipeCycleBadge" class="text-indigo-400 font-bold">Cycle 0</span>
+          </div>
+          <div class="flex items-center gap-2 text-[10px]">
+            <span id="pipeStallBadge" class="px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 border border-zinc-700">Stall: NO</span>
+            <span id="pipeFlushBadge" class="px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 border border-zinc-700">Flush: NO</span>
+            <span id="pipeFwdBadge" class="px-2 py-0.5 rounded-full bg-blue-900/30 text-blue-300 border border-blue-500/30">Fwd: OK</span>
+          </div>
+        </div>
+
+        <!-- Live Inter-Stage Register Cards -->
+        <div class="space-y-2.5 font-mono text-[11px]">
+          <!-- 1. IF/ID -->
+          <div class="pipeline-reg-card p-2.5 rounded-xl bg-zinc-950/70 border border-blue-500/40 space-y-1 shadow-sm">
+            <div class="flex items-center justify-between text-[10px]">
+              <span class="font-bold text-blue-400 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-blue-400"></span>
+                IF / ID Register
+              </span>
+              <span id="pipeIfIdValid" class="text-[9px] px-1.5 py-0.2 rounded bg-blue-950/50 text-blue-300">Valid</span>
+            </div>
+            <div class="text-[10px] text-zinc-300 flex justify-between">
+              <span>PC: <strong id="pipeIfIdPC" class="text-yellow-400">0x00400000</strong></span>
+              <span>Hex: <strong id="pipeIfIdHex" class="text-white">0x00000013</strong></span>
+            </div>
+            <div id="pipeIfIdInst" class="text-[10px] text-zinc-400 truncate font-sans">nop</div>
+          </div>
+
+          <!-- 2. ID/EX -->
+          <div class="pipeline-reg-card p-2.5 rounded-xl bg-zinc-950/70 border border-purple-500/40 space-y-1 shadow-sm">
+            <div class="flex items-center justify-between text-[10px]">
+              <span class="font-bold text-purple-400 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-purple-400"></span>
+                ID / EX Register
+              </span>
+              <span id="pipeIdExValid" class="text-[9px] px-1.5 py-0.2 rounded bg-purple-950/50 text-purple-300">Valid</span>
+            </div>
+            <div class="text-[10px] text-zinc-300 grid grid-cols-2 gap-1">
+              <div>rs1_val: <strong id="pipeIdExRs1Val" class="text-white">0</strong></div>
+              <div>rs2_val: <strong id="pipeIdExRs2Val" class="text-white">0</strong></div>
+              <div>imm: <strong id="pipeIdExImm" class="text-yellow-400">0</strong></div>
+              <div>dest: <strong id="pipeIdExRd" class="text-emerald-400">r0</strong></div>
+            </div>
+            <div class="text-[9px] text-zinc-400 pt-1 border-t border-zinc-800/80 font-sans flex justify-between">
+              <span>ALUOp: <strong id="pipeIdExAluOp" class="text-purple-300 font-mono">ADD</strong></span>
+              <span>RegW: <strong id="pipeIdExRegW" class="text-emerald-400 font-mono">1</strong></span>
+            </div>
+          </div>
+
+          <!-- 3. EX/MEM -->
+          <div class="pipeline-reg-card p-2.5 rounded-xl bg-zinc-950/70 border border-amber-500/40 space-y-1 shadow-sm">
+            <div class="flex items-center justify-between text-[10px]">
+              <span class="font-bold text-amber-400 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                EX / MEM Register
+              </span>
+              <span id="pipeExMemValid" class="text-[9px] px-1.5 py-0.2 rounded bg-amber-950/50 text-amber-300">Valid</span>
+            </div>
+            <div class="text-[10px] text-zinc-300 flex justify-between">
+              <span>aluResult: <strong id="pipeExMemAlu" class="text-yellow-400">0</strong></span>
+              <span>dest: <strong id="pipeExMemRd" class="text-emerald-400">r0</strong></span>
+            </div>
+            <div class="text-[9px] text-zinc-400 font-sans">
+              <span>StoreData: <strong id="pipeExMemStore" class="text-white font-mono">0</strong></span>
+            </div>
+          </div>
+
+          <!-- 4. MEM/WB -->
+          <div class="pipeline-reg-card p-2.5 rounded-xl bg-zinc-950/70 border border-emerald-500/40 space-y-1 shadow-sm">
+            <div class="flex items-center justify-between text-[10px]">
+              <span class="font-bold text-emerald-400 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                MEM / WB Register
+              </span>
+              <span id="pipeMemWbValid" class="text-[9px] px-1.5 py-0.2 rounded bg-emerald-950/50 text-emerald-300">Valid</span>
+            </div>
+            <div class="text-[10px] text-zinc-300 flex justify-between">
+              <span>writeData: <strong id="pipeMemWbData" class="text-emerald-300">0</strong></span>
+              <span>dest: <strong id="pipeMemWbRd" class="text-white">r0</strong></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PANEL 3: Memory Hex Dump Viewer -->
+      <div id="inspPanelMemory" class="insp-subpanel hidden flex-1 flex flex-col p-3 space-y-2 overflow-hidden bg-zinc-900/50">
         <div class="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider flex justify-between items-center">
           <span class="flex items-center gap-1.5 truncate">
             <svg class="w-3.5 h-3.5 text-blue-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
@@ -683,6 +1202,270 @@
           <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-xs font-medium transition shadow-md shadow-blue-900/30 cursor-pointer">Create File</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- 3. Architecture & Block Diagram Fullscreen Modal (Milestone M2) -->
+  <div id="archBlockDiagramModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 transition-all duration-200 select-none">
+    <div class="bg-zinc-900/95 border border-indigo-500/40 w-full max-w-5xl max-h-[90vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col backdrop-blur-xl ring-1 ring-white/10 modal-dialog">
+      <!-- Modal Header -->
+      <div class="p-4 border-b border-zinc-800 flex items-center justify-between bg-zinc-950/70">
+        <div class="flex items-center gap-2.5">
+          <div class="p-2 rounded-xl bg-indigo-500/10 text-indigo-400">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 15h2"/><path d="M20 9h2"/></svg>
+          </div>
+          <div>
+            <h3 class="font-bold text-white text-sm">LIMO 5-Stage Core Processor Architecture & Block Diagram</h3>
+            <p class="text-[11px] text-zinc-400">CS3520 Milestone M2 Technical Deliverable · Derived from RISC-V RV32I</p>
+          </div>
+        </div>
+        <button type="button" id="btnCloseArchModal" class="p-1.5 rounded-xl hover:bg-zinc-800 text-zinc-400 hover:text-white transition cursor-pointer">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="flex-1 overflow-y-auto p-4 space-y-4">
+        <!-- SVG Interactive Datapath Diagram -->
+        <div class="bg-zinc-950/90 p-4 rounded-2xl border border-zinc-800 shadow-inner overflow-x-auto">
+          <svg viewBox="0 0 920 340" class="w-full min-w-[700px] h-auto text-zinc-300 font-mono select-none">
+            <!-- Stage Header Banners -->
+            <rect x="20" y="10" width="140" height="26" rx="6" fill="#1e3a8a" fill-opacity="0.3" stroke="#3b82f6" stroke-width="1"/>
+            <text x="90" y="27" text-anchor="middle" font-size="11" fill="#60a5fa" font-weight="bold">1. IF (FETCH)</text>
+
+            <rect x="200" y="10" width="140" height="26" rx="6" fill="#581c87" fill-opacity="0.3" stroke="#a855f7" stroke-width="1"/>
+            <text x="270" y="27" text-anchor="middle" font-size="11" fill="#c084fc" font-weight="bold">2. ID (DECODE)</text>
+
+            <rect x="380" y="10" width="140" height="26" rx="6" fill="#78350f" fill-opacity="0.3" stroke="#f59e0b" stroke-width="1"/>
+            <text x="450" y="27" text-anchor="middle" font-size="11" fill="#fbbf24" font-weight="bold">3. EX (EXECUTE)</text>
+
+            <rect x="560" y="10" width="140" height="26" rx="6" fill="#064e3b" fill-opacity="0.3" stroke="#10b981" stroke-width="1"/>
+            <text x="630" y="27" text-anchor="middle" font-size="11" fill="#34d399" font-weight="bold">4. MEM (ACCESS)</text>
+
+            <rect x="740" y="10" width="140" height="26" rx="6" fill="#831843" fill-opacity="0.3" stroke="#ec4899" stroke-width="1"/>
+            <text x="810" y="27" text-anchor="middle" font-size="11" fill="#f472b6" font-weight="bold">5. WB (WRITE-BACK)</text>
+
+            <!-- Hazard & Forwarding Unit Banner -->
+            <rect x="20" y="45" width="860" height="34" rx="8" fill="#18181b" stroke="#6366f1" stroke-dasharray="4 3" stroke-width="1.5"/>
+            <text x="450" y="66" text-anchor="middle" font-size="11" fill="#c7d2fe" font-weight="bold">HAZARD DETECTION UNIT & FORWARDING UNIT (Load-Use Stall & EX/MEM Forwarding)</text>
+
+            <!-- IF Stage Components -->
+            <rect x="30" y="100" width="120" height="60" rx="8" fill="#1e293b" stroke="#3b82f6" stroke-width="1.5"/>
+            <text x="90" y="125" text-anchor="middle" font-size="11" fill="#93c5fd" font-weight="bold">Program Counter</text>
+            <text x="90" y="142" text-anchor="middle" font-size="10" fill="#64748b">PC + 4 Sequential</text>
+
+            <rect x="30" y="180" width="120" height="90" rx="8" fill="#1e293b" stroke="#3b82f6" stroke-width="1.5"/>
+            <text x="90" y="215" text-anchor="middle" font-size="11" fill="#93c5fd" font-weight="bold">Instruction Memory</text>
+            <text x="90" y="235" text-anchor="middle" font-size="10" fill="#3b82f6">(IMEM - 32-bit Word)</text>
+            <text x="90" y="252" text-anchor="middle" font-size="9" fill="#64748b">Addressed by PC</text>
+
+            <!-- IF/ID Register -->
+            <rect x="175" y="90" width="18" height="230" rx="4" fill="#3b82f6" fill-opacity="0.35" stroke="#3b82f6" stroke-width="2"/>
+            <text x="184" y="210" text-anchor="middle" font-size="10" fill="#bfdbfe" font-weight="bold" transform="rotate(-90 184 210)">IF / ID (65b)</text>
+
+            <!-- ID Stage Components -->
+            <rect x="210" y="100" width="120" height="100" rx="8" fill="#2e1065" stroke="#a855f7" stroke-width="1.5"/>
+            <text x="270" y="125" text-anchor="middle" font-size="11" fill="#d8b4fe" font-weight="bold">32 Register File</text>
+            <text x="270" y="142" text-anchor="middle" font-size="10" fill="#a855f7">r0–r31 (r0 = Letho)</text>
+            <text x="270" y="160" text-anchor="middle" font-size="9" fill="#c084fc">rs1_val, rs2_val</text>
+            <text x="270" y="180" text-anchor="middle" font-size="8" fill="#64748b">2 Read / 1 Write Port</text>
+
+            <rect x="210" y="220" width="120" height="60" rx="8" fill="#2e1065" stroke="#a855f7" stroke-width="1.5"/>
+            <text x="270" y="245" text-anchor="middle" font-size="11" fill="#d8b4fe" font-weight="bold">Immediate Gen</text>
+            <text x="270" y="262" text-anchor="middle" font-size="9" fill="#a855f7">Sign Extend (I, S, B)</text>
+
+            <!-- ID/EX Register -->
+            <rect x="350" y="90" width="18" height="230" rx="4" fill="#a855f7" fill-opacity="0.35" stroke="#a855f7" stroke-width="2"/>
+            <text x="359" y="210" text-anchor="middle" font-size="10" fill="#e9d5ff" font-weight="bold" transform="rotate(-90 359 210)">ID / EX (171b)</text>
+
+            <!-- EX Stage Components -->
+            <polygon points="390,110 490,140 490,190 390,220 390,180 415,165 390,150" fill="#451a03" stroke="#f59e0b" stroke-width="2"/>
+            <text x="445" y="170" text-anchor="middle" font-size="13" fill="#fde68a" font-weight="bold">ALU</text>
+            <text x="445" y="185" text-anchor="middle" font-size="8" fill="#d97706">32-bit Logic</text>
+
+            <rect x="390" y="240" width="110" height="55" rx="8" fill="#451a03" stroke="#f59e0b" stroke-width="1.5"/>
+            <text x="445" y="262" text-anchor="middle" font-size="10" fill="#fde68a" font-weight="bold">Branch Target</text>
+            <text x="445" y="278" text-anchor="middle" font-size="8" fill="#b45309">PC + offset (hlk, hft)</text>
+
+            <!-- EX/MEM Register -->
+            <rect x="525" y="90" width="18" height="230" rx="4" fill="#f59e0b" fill-opacity="0.35" stroke="#f59e0b" stroke-width="2"/>
+            <text x="534" y="210" text-anchor="middle" font-size="10" fill="#fef3c7" font-weight="bold" transform="rotate(-90 534 210)">EX / MEM (139b)</text>
+
+            <!-- MEM Stage Components -->
+            <rect x="565" y="120" width="130" height="140" rx="8" fill="#064e3b" stroke="#10b981" stroke-width="2"/>
+            <text x="630" y="155" text-anchor="middle" font-size="12" fill="#a7f3d0" font-weight="bold">Data Memory</text>
+            <text x="630" y="175" text-anchor="middle" font-size="11" fill="#34d399">(DMEM)</text>
+            <text x="630" y="200" text-anchor="middle" font-size="9" fill="#6ee7b7">lt (LW) / blk (SW)</text>
+            <text x="630" y="220" text-anchor="middle" font-size="8" fill="#059669">Word Aligned (mod 4)</text>
+
+            <!-- MEM/WB Register -->
+            <rect x="715" y="90" width="18" height="230" rx="4" fill="#10b981" fill-opacity="0.35" stroke="#10b981" stroke-width="2"/>
+            <text x="724" y="210" text-anchor="middle" font-size="10" fill="#d1fae5" font-weight="bold" transform="rotate(-90 724 210)">MEM / WB (136b)</text>
+
+            <!-- WB Stage Components -->
+            <rect x="760" y="140" width="90" height="90" rx="8" fill="#831843" stroke="#ec4899" stroke-width="2"/>
+            <text x="805" y="175" text-anchor="middle" font-size="11" fill="#fbcfe8" font-weight="bold">MemToReg Mux</text>
+            <text x="805" y="195" text-anchor="middle" font-size="9" fill="#f472b6">ALU vs MEM</text>
+            <text x="805" y="212" text-anchor="middle" font-size="8" fill="#db2777">Write to R[rd]</text>
+
+            <!-- Feedback Datapath Wire (WB back to ID RegFile) -->
+            <path d="M 805 230 L 805 315 L 270 315 L 270 200" fill="none" stroke="#ec4899" stroke-width="1.5" stroke-dasharray="5 3"/>
+            <text x="540" y="310" text-anchor="middle" font-size="9" fill="#f472b6">Write-Back Data to R[rd] (Stage 5 -&gt; Stage 2)</text>
+
+            <!-- Branch Feedback Wire (EX back to IF PC) -->
+            <path d="M 445 295 L 445 328 L 90 328 L 90 160" fill="none" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4 2"/>
+            <text x="240" y="324" text-anchor="middle" font-size="9" fill="#fbbf24">Branch Taken PC Redirect (2-Cycle Flush)</text>
+          </svg>
+        </div>
+
+        <!-- Explanatory Specification Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+          <div class="p-3 bg-zinc-950/70 rounded-2xl border border-zinc-800 space-y-1.5">
+            <h4 class="font-bold text-blue-400">1. Harvard Datapath</h4>
+            <p class="text-[11px] text-zinc-400 leading-relaxed">
+              Separate Instruction Memory (IMEM) and Data Memory (DMEM) prevents structural memory access hazards during simultaneous instruction fetch and load/store access.
+            </p>
+          </div>
+          <div class="p-3 bg-zinc-950/70 rounded-2xl border border-zinc-800 space-y-1.5">
+            <h4 class="font-bold text-amber-400">2. Section 3(e) Direct Branches</h4>
+            <p class="text-[11px] text-zinc-400 leading-relaxed">
+              No NZCV status registers. Conditionals compare operands directly in EX (<code class="text-zinc-200">hlk</code> / <code class="text-zinc-200">hft</code>), preventing flag-dependency hazard interlocks.
+            </p>
+          </div>
+          <div class="p-3 bg-zinc-950/70 rounded-2xl border border-zinc-800 space-y-1.5">
+            <h4 class="font-bold text-emerald-400">3. Hazard Resolution</h4>
+            <p class="text-[11px] text-zinc-400 leading-relaxed">
+              Full forwarding from EX/MEM and MEM/WB stages eliminates RAW stalls. Load-use dependency injects a 1-cycle bubble into ID/EX while freezing PC and IF/ID.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Interface Wireframes Modal (Milestone M2) -->
+  <div id="wireframesModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 transition-all duration-200 select-none">
+    <div class="bg-zinc-900/95 border border-cyan-500/40 w-full max-w-5xl max-h-[90vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col backdrop-blur-xl ring-1 ring-white/10 modal-dialog">
+      <!-- Modal Header -->
+      <div class="p-4 border-b border-zinc-800 flex items-center justify-between bg-zinc-950/70">
+        <div class="flex items-center gap-2.5">
+          <div class="p-2 rounded-xl bg-cyan-500/10 text-cyan-400">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+          </div>
+          <div>
+            <h3 class="font-bold text-white text-sm">LIMO Studio Interface Wireframes & UI Specifications</h3>
+            <p class="text-[11px] text-zinc-400">CS3520 Milestone M2 Deliverable · High-Fidelity Blueprint Schematics</p>
+          </div>
+        </div>
+        <button type="button" id="btnCloseWireframesModal" class="p-1.5 rounded-xl hover:bg-zinc-800 text-zinc-400 hover:text-white transition cursor-pointer">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Wireframe 1 -->
+          <div class="p-3 bg-zinc-950/70 rounded-2xl border border-zinc-800 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-cyan-400 text-xs">1. IDE Primary Layout Wireframe</span>
+              <span class="text-[9px] bg-cyan-900/30 text-cyan-300 px-2 py-0.5 rounded font-mono">Core Workspace</span>
+            </div>
+            <pre class="blueprint-box p-3 rounded-xl font-mono text-[10px] text-cyan-200/90 overflow-x-auto leading-relaxed select-text">+------------------------------------------------------------+
+| [Header Navbar: Logo | File Edit View Run M2 Tests | ⌘P]   |
++----+-------------------+--------------------+--------------+
+| D  | SIDEBAR           | CODE CANVAS        | CPU & MEMORY |
+| O  | [Files | Search   | [Tabs Bar]         | INSPECTOR    |
+| C  |  Debug | M2-Design| [Gutter | Editor]  | [32 Regs     |
+| K  |  Unit Tests]      | [Quick Step / Run] |  Pipeline    |
+|    |                   |                    |  Memory Hex] |
++----+-------------------+--------------------+--------------+
+| [Bottom Drawer: Terminal CLI &amp; Execution Logs]             |
++------------------------------------------------------------+</pre>
+          </div>
+
+          <!-- Wireframe 2 -->
+          <div class="p-3 bg-zinc-950/70 rounded-2xl border border-zinc-800 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-amber-400 text-xs">2. 5-Stage Pipeline Registers Wireframe</span>
+              <span class="text-[9px] bg-amber-900/30 text-amber-300 px-2 py-0.5 rounded font-mono">Microarchitecture</span>
+            </div>
+            <pre class="blueprint-box p-3 rounded-xl font-mono text-[10px] text-amber-200/90 overflow-x-auto leading-relaxed select-text">+------------------------------------------------------------+
+| CYCLE: 0004 | STALL BUBBLE: NO | BRANCH FLUSH: NO          |
++----------+----------+----------+------------+--------------+
+| IF/ID    | ID/EX    | EX/MEM   | MEM/WB     | WRITE-BACK   |
+| PC, Inst | Regs,Imm | ALU Res  | MemReadVal | Write to Rd  |
+| (65 bits)| (171 b)  | (139 b)  | (136 bits) | R[rd] = Res  |
++----------+----------+----------+------------+--------------+</pre>
+          </div>
+
+          <!-- Wireframe 3 -->
+          <div class="p-3 bg-zinc-950/70 rounded-2xl border border-zinc-800 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-indigo-400 text-xs">3. Architecture Block Diagram Wireframe</span>
+              <span class="text-[9px] bg-indigo-900/30 text-indigo-300 px-2 py-0.5 rounded font-mono">Datapath</span>
+            </div>
+            <pre class="blueprint-box p-3 rounded-xl font-mono text-[10px] text-indigo-200/90 overflow-x-auto leading-relaxed select-text">+------------------------------------------------------------+
+| [Hazard Detection Unit] ===== [Forwarding Unit]            |
+| PC Mux -&gt; IMEM -&gt; [IF/ID] -&gt; RegFile/Imm -&gt; [ID/EX]        |
+|                -&gt; 32-bit ALU / Branch -&gt; [EX/MEM]          |
+|                -&gt; DMEM -&gt; [MEM/WB] -&gt; MemToReg Mux -&gt; R[rd]|
++------------------------------------------------------------+</pre>
+          </div>
+
+          <!-- Wireframe 4 -->
+          <div class="p-3 bg-zinc-950/70 rounded-2xl border border-zinc-800 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-emerald-400 text-xs">4. Assembler Test Runner Wireframe</span>
+              <span class="text-[9px] bg-emerald-900/30 text-emerald-300 px-2 py-0.5 rounded font-mono">Verification</span>
+            </div>
+            <pre class="blueprint-box p-3 rounded-xl font-mono text-[10px] text-emerald-200/90 overflow-x-auto leading-relaxed select-text">+------------------------------------------------------------+
+| [Run All Tests (F8)] [Export Report JSON]                  |
+| TOTAL: 29 | PASSED: 29 (✓) | FAILED: 0 | DURATION: 12ms    |
+| Progress: [=========================================] 100% |
+| [✓ PASS] kop r8, r6, r7       =&gt; 0x00730433 (M1 Benchmark) |
+| [✓ PASS] khh r8, r6, 15       =&gt; 0x00F30413 (M1 Benchmark) |
++------------------------------------------------------------+</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Assembler Unit Tests Modal (Milestone M2) -->
+  <div id="unitTestsModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 transition-all duration-200 select-none">
+    <div class="bg-zinc-900/95 border border-emerald-500/40 w-full max-w-4xl max-h-[90vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col backdrop-blur-xl ring-1 ring-white/10 modal-dialog">
+      <!-- Modal Header -->
+      <div class="p-4 border-b border-zinc-800 flex items-center justify-between bg-zinc-950/70">
+        <div class="flex items-center gap-2.5">
+          <div class="p-2 rounded-xl bg-emerald-500/10 text-emerald-400">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>
+          </div>
+          <div>
+            <h3 class="font-bold text-white text-sm">LIMO Assembler Automated Test Suite</h3>
+            <p class="text-[11px] text-zinc-400">CS3520 Milestone M2 Deliverable · 29 Comprehensive Unit Tests</p>
+          </div>
+        </div>
+        <button type="button" id="btnCloseUnitTestsModal" class="p-1.5 rounded-xl hover:bg-zinc-800 text-zinc-400 hover:text-white transition cursor-pointer">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="flex-1 overflow-y-auto p-4 space-y-4 text-xs font-mono">
+        <div class="flex items-center justify-between">
+          <button type="button" id="btnModalRunTests" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl font-semibold flex items-center gap-2 transition cursor-pointer text-xs">
+            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+            <span>Run All Tests (F8)</span>
+          </button>
+          <div class="flex items-center gap-3 text-xs">
+            <span class="text-zinc-400">Passed: <strong id="modalPassCount" class="text-emerald-400">29 / 29</strong></span>
+            <span class="text-zinc-400">Time: <strong id="modalTimeCount" class="text-blue-400">-- ms</strong></span>
+          </div>
+        </div>
+
+        <div id="modalTestCasesContainer" class="space-y-1.5 max-h-[60vh] overflow-y-auto pr-1"></div>
+      </div>
     </div>
   </div>
 
