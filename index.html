@@ -160,8 +160,12 @@
               <span class="text-emerald-400 font-mono text-[10px] bg-emerald-500/10 px-1.5 py-0.5 rounded-md">F5</span>
             </button>
             <button type="button" id="menuStepInst" class="px-3 py-2 rounded-xl hover:bg-amber-600 hover:text-white text-left flex justify-between items-center transition cursor-pointer">
-              <span class="flex items-center gap-2"><svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg> Step Instruction</span>
+              <span class="flex items-center gap-2"><svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg> Step Clock Cycle</span>
               <span class="text-amber-400 font-mono text-[10px] bg-amber-500/10 px-1.5 py-0.5 rounded-md">F10</span>
+            </button>
+            <button type="button" id="menuResetCpu" class="px-3 py-2 rounded-xl hover:bg-red-600 hover:text-white text-left flex justify-between items-center transition cursor-pointer">
+              <span class="flex items-center gap-2"><svg class="w-3.5 h-3.5 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg> Reset CPU &amp; Pipeline</span>
+              <span class="text-red-400 font-mono text-[10px] bg-red-500/10 px-1.5 py-0.5 rounded-md">F9</span>
             </button>
           </div>
         </div>
@@ -394,10 +398,13 @@
 
         <div class="space-y-2">
           <button type="button" id="btnDebugStep" class="w-full bg-amber-600 hover:bg-amber-500 text-white py-2 rounded-xl font-medium flex items-center justify-center gap-2 transition cursor-pointer">
-            Step Over (F10)
+            Step Clock Cycle (F10)
           </button>
           <button type="button" id="btnDebugRun" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2 rounded-xl font-medium flex items-center justify-center gap-2 transition cursor-pointer">
             Continue Execution (F5)
+          </button>
+          <button type="button" id="btnDebugReset" class="w-full bg-red-700/80 hover:bg-red-600 text-white py-2 rounded-xl font-medium flex items-center justify-center gap-2 transition cursor-pointer">
+            Reset CPU &amp; Pipeline (F9)
           </button>
         </div>
 
@@ -454,7 +461,8 @@
           <div class="p-3 bg-zinc-800/30 rounded-2xl border border-zinc-800 text-[11px] text-zinc-400 space-y-1">
             <span class="font-semibold text-zinc-300 block">Keyboard Shortcuts:</span>
             <div><strong class="text-zinc-200">F5:</strong> Assemble & Run</div>
-            <div><strong class="text-zinc-200">F10:</strong> Step Instruction</div>
+            <div><strong class="text-zinc-200">F9:</strong> Reset CPU &amp; pipeline</div>
+            <div><strong class="text-zinc-200">F10:</strong> Step one clock cycle</div>
             <div><strong class="text-zinc-200">Ctrl+O:</strong> Open ASM File</div>
             <div><strong class="text-zinc-200">Ctrl+S:</strong> Save Buffer</div>
             <div><strong class="text-zinc-200">Ctrl+/:</strong> Toggle Comment</div>
@@ -1046,7 +1054,7 @@
         <div class="p-2.5 bg-zinc-950/80 rounded-xl border border-zinc-800 space-y-2 font-mono text-[11px]">
           <div class="flex items-center justify-between">
             <span class="text-zinc-400 font-sans font-semibold text-[11px]">Pipeline Status:</span>
-            <span id="pipeCycleBadge" class="text-indigo-400 font-bold">Cycle 0</span>
+            <span id="pipeCycleBadge" class="text-indigo-400 font-bold" aria-live="polite">Cycle 0</span>
           </div>
 
           <!-- Live 5-Stage Visualizer Pills -->
@@ -1063,11 +1071,21 @@
             <span>CPI: <strong id="pipeCPIBadge" class="text-yellow-400">0.00</strong></span>
           </div>
 
-          <div class="flex items-center gap-1.5 text-[10px] pt-0.5">
+          <div class="flex flex-wrap items-center gap-1.5 text-[10px] pt-0.5">
             <span id="pipeStallBadge" class="px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 border border-zinc-700">Stall: NO</span>
             <span id="pipeFlushBadge" class="px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 border border-zinc-700">Flush: NO</span>
-            <span id="pipeFwdBadge" class="px-2 py-0.5 rounded-full bg-blue-900/30 text-blue-300 border border-blue-500/30">Hazard-Free Core</span>
+            <span id="pipeFwdBadge" class="px-2 py-0.5 rounded-full bg-blue-900/30 text-blue-300 border border-blue-500/30">No RAW hazard</span>
           </div>
+          <div id="pipeHazardDetail" class="hidden text-[10px] leading-snug font-sans text-amber-300 bg-amber-950/30 border border-amber-500/30 rounded-lg p-1.5" role="status"></div>
+        </div>
+
+        <!-- Pipeline Chart: one row per instruction, one column per clock cycle -->
+        <div class="p-2.5 bg-zinc-950/80 rounded-xl border border-zinc-800 space-y-1.5">
+          <div class="flex items-center justify-between text-[11px]">
+            <span class="text-zinc-400 font-sans font-semibold">Pipeline Chart</span>
+            <span class="text-[9px] text-zinc-500 font-sans">&#9889; branch flush &middot; &#10007; squashed</span>
+          </div>
+          <div id="pipeChartContainer" class="pipe-chart" role="region" aria-label="Pipeline chart: instruction by clock cycle" tabindex="0"></div>
         </div>
 
         <!-- Live Inter-Stage Register Cards -->

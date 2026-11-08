@@ -419,7 +419,9 @@ _start:
     // CPU and simulation state
     registers: new Array(32).fill(0),
     prevRegisters: new Array(32).fill(0),
-    simulatedMemory: { 1004: 20 },
+    simulatedMemory: {},      // empty at power-on: unwritten words read as 0 (no seeded demo data)
+    memView: null,            // address the user jumped to in the Memory tab (view only, never written)
+    pausedAtBp: false,        // Run is parked on a breakpoint; the next Run resumes past it
     pc: 0x00400000,
     currentStepIndex: 0,
     activeLineNum: null,
@@ -436,6 +438,11 @@ _start:
       flushed: false,
       lastWrittenReg: null,
       lastWrittenMem: null,
+      wbInst: null,           // instruction that retired THIS cycle (drives the WB pill and the chart)
+      hazard: null,           // RAW hazard visible this cycle (UI warning only; M3 has no forwarding)
+      rawHazards: 0,
+      chart: { rows: [], flushCycles: [] },
+
       IF_ID: createBubbleIF_ID(),
       ID_EX: createBubbleID_EX(),
       EX_MEM: createBubbleEX_MEM(),
@@ -998,42 +1005,69 @@ _start:
   }
 
   // --- Memory Hex Dump Viewer Rendering ---
+  // Lists every word the program has stored, plus (after Jump) an 8-word window from the jumped-to address.
+  // Viewing never writes to memory. Bytes are shown in memory order (little-endian, as the ISA specifies).
   function renderMemoryHex() {
     const container = document.getElementById('memoryHexContainer');
     if (!container) return;
 
-    const lastStoreAddr = state.pipeline ? state.pipeline.lastWrittenMem : null;
-    const memEntries = Object.entries(state.simulatedMemory);
+    const written = new Map();
+    Object.entries(state.simulatedMemory).forEach(([k, v]) => written.set(parseInt(k, 10) >>> 0, v | 0));
+    const lw = state.pipeline ? state.pipeline.lastWrittenMem : null;
+    const lastStore = lw !== null && lw !== undefined ? lw >>> 0 : null;
+    const view = state.memView === null || state.memView === undefined ? null : state.memView;
 
-    // Format rows
-    const rows = (memEntries.length > 0 ? memEntries : [
-      ['1004', 20],
-      ['4202496', 0x4C494D4F],
-      ['4202500', 0x52563332],
-      ['2147483632', 0]
-    ]).map(([addrStr, val]) => {
-      const addrNum = parseInt(addrStr, 10);
-      const isStoreTarget = lastStoreAddr !== null && addrNum === lastStoreAddr;
-      const hexVal = (val >>> 0).toString(16).padStart(8, '0').toUpperCase();
-      return {
-        addrNum,
-        isStoreTarget,
-        addr: '0x' + (addrNum >>> 0).toString(16).padStart(8, '0').toUpperCase(),
-        hex: `${hexVal.slice(0, 2)} ${hexVal.slice(2, 4)} ${hexVal.slice(4, 6)} ${hexVal.slice(6, 8)}`,
-        ascii: `val: ${val}`
-      };
-    }).sort((a, b) => a.addrNum - b.addrNum);
+    const addrs = new Set(written.keys());
+    if (view !== null) for (let i = 0; i < 8; i++) addrs.add((view + 4 * i) >>> 0);
 
-    container.innerHTML = rows.map((r) => `
-      <div class="flex items-center justify-between text-[11px] p-1.5 rounded-lg border transition ${r.isStoreTarget ? 'bg-amber-950/50 border-amber-500/70 shadow-sm shadow-amber-500/20 ring-1 ring-amber-400/50' : 'bg-zinc-900/60 border-zinc-800/80'}">
+    const note = '<div class="text-[10px] text-zinc-500 font-sans pb-1">Bytes in memory order (little-endian). Unwritten words read as 0.</div>';
+    if (addrs.size === 0) {
+      container.innerHTML = note + '<div class="text-[11px] text-zinc-500 italic p-2 bg-zinc-800/30 rounded-xl">Data memory is empty: nothing has been stored yet. Run a program that uses <code>blk</code>, or use Jump to look at an address.</div>';
+      return;
+    }
+
+    container.innerHTML = note + [...addrs].sort((a, b) => a - b).map((addr) => {
+      const isWritten = written.has(addr);
+      const val = isWritten ? written.get(addr) : 0;
+      const isStore = lastStore !== null && addr === lastStore;
+      const isView = view !== null && addr === view;
+      const bytes = [0, 8, 16, 24].map((sh) => ((val >>> sh) & 0xff).toString(16).padStart(2, '0').toUpperCase()).join(' ');
+      const frame = isStore ? 'bg-amber-950/50 border-amber-500/70 shadow-sm shadow-amber-500/20 ring-1 ring-amber-400/50'
+        : isView ? 'bg-blue-950/40 border-blue-500/60' : 'bg-zinc-900/60 border-zinc-800/80';
+      return `
+      <div class="flex items-center justify-between text-[11px] p-1.5 rounded-lg border transition ${frame} ${isWritten ? '' : 'opacity-70'}"${isView ? ' data-view="1"' : ''}>
         <div class="flex items-center gap-1.5 font-mono">
-          <span class="text-blue-400 font-semibold">${r.addr}</span>
-          ${r.isStoreTarget ? '<span class="text-[8px] bg-amber-500/30 text-amber-300 px-1 py-0.2 rounded font-mono font-bold">STORE</span>' : ''}
+          <span class="text-blue-400 font-semibold">0x${addr.toString(16).padStart(8, '0').toUpperCase()}</span>
+          ${isStore ? '<span class="text-[8px] bg-amber-500/30 text-amber-300 px-1 py-0.2 rounded font-mono font-bold">STORE</span>' : ''}
+          ${isView ? '<span class="text-[8px] bg-blue-500/30 text-blue-300 px-1 py-0.2 rounded font-mono font-bold">VIEW</span>' : ''}
         </div>
-        <span class="text-yellow-300 font-mono tracking-wider">${r.hex}</span>
-        <span class="text-zinc-500 text-[10px] font-sans">${r.ascii}</span>
-      </div>
-    `).join('');
+        <span class="text-yellow-300 font-mono tracking-wider">${bytes}</span>
+        <span class="text-zinc-500 text-[10px] font-sans">${isWritten ? `val: ${val}` : 'unwritten'}</span>
+      </div>`;
+    }).join('');
+  }
+
+  function jumpToMemoryAddress(rawInput) {
+    if (!rawInput && rawInput !== 0) return;
+    const str = String(rawInput).trim();
+    if (!str) return;
+
+    const addr = /^0x/i.test(str) ? parseInt(str, 16) : parseInt(str, 10);
+    if (isNaN(addr)) {
+      showToast(`Invalid memory address: ${str}`, 'warn');
+      return;
+    }
+
+    // View only: jumping must never create a word in memory or fake a STORE highlight.
+    const alignedAddr = (addr & ~3) >>> 0;
+    state.memView = alignedAddr;
+    renderMemoryHex();
+    switchInspectorTab('memory');
+    const row = document.querySelector('#memoryHexContainer [data-view="1"]');
+    if (row && row.scrollIntoView) row.scrollIntoView({ block: 'center' });
+    logTerminal(`<span class="text-blue-400 font-mono font-semibold">[Memory View]</span> Showing 8 words from <strong>0x${alignedAddr.toString(16).padStart(8, '0').toUpperCase()}</strong> (${alignedAddr}).`);
+    showToast(`Viewing 0x${alignedAddr.toString(16).padStart(8, '0').toUpperCase()}`, 'info');
+
   }
 
   function jumpToMemoryAddress(rawInput) {
@@ -1184,19 +1218,35 @@ _start:
     return { instructions, labelMap };
   }
 
-  function resetCpu() {
-    state.prevRegisters = [...state.registers];
+  // Puts the whole machine back to power-on state. Silent: callers decide what to tell the user.
+  function resetMachineState() {
     state.registers = new Array(32).fill(0);
     state.registers[2] = 0x7FFFFFF0; // SP
-    state.simulatedMemory = { 1004: 20 };
+    state.prevRegisters = [...state.registers];   // nothing has changed yet, so nothing is highlighted
+    state.simulatedMemory = {};                   // empty: unwritten words read as 0
+    state.memView = null;
     state.pc = 0x00400000;
     state.currentStepIndex = 0;
     state.activeLineNum = null;
     state.isRunning = false;
+    state.pausedAtBp = false;
 
     resetPipeline();
     renderRegisters();
     renderEditor();
+  }
+
+  // Editing or switching the program while it is part-way through the pipeline would leave the old program's
+  // instructions in flight, so the machine is reset instead.
+  function resetIfProgramChanged(message) {
+    if (state.pipeline.cycle > 0) {
+      resetMachineState();
+      showToast(message, 'warn');
+    }
+  }
+
+  function resetCpu() {
+    resetMachineState();
 
     const quickPC = document.getElementById('quickPC');
     const quickInst = document.getElementById('quickActiveInst');
@@ -1228,18 +1278,23 @@ _start:
     state.pipeline.stalled = false;
     state.pipeline.lastWrittenReg = null;
     state.pipeline.lastWrittenMem = null;
+    state.pipeline.wbInst = null;
+    state.prevRegisters = [...state.registers]; // snapshot at the START of the cycle: highlights show what changed THIS cycle
+
 
     // ------------------------------------------------------------------------
     // STAGE 5: WRITE-BACK (WB)
     // ------------------------------------------------------------------------
     if (state.pipeline.MEM_WB.valid) {
       if (state.pipeline.MEM_WB.regWrite && state.pipeline.MEM_WB.rd !== 0) {
-        state.prevRegisters = [...state.registers];
+
         state.registers[state.pipeline.MEM_WB.rd] = state.pipeline.MEM_WB.writeBackData | 0;
         state.pipeline.lastWrittenReg = state.pipeline.MEM_WB.rd;
       }
       state.registers[0] = 0; // Letho invariant: hardwired zero
       state.pipeline.instructionsRetired++;
+      state.pipeline.wbInst = Object.assign({}, state.pipeline.MEM_WB);
+
     }
 
     // ------------------------------------------------------------------------
@@ -1449,6 +1504,9 @@ _start:
     state.pipeline.EX_MEM = next_EX_MEM;
     state.pipeline.MEM_WB = next_MEM_WB;
 
+    recordPipelineHistory(branchTaken); // UI bookkeeping only: feeds the pipeline chart and the hazard warning
+
+
     const isDrained = isPipelineDrained(instructions.length);
 
     // Active instruction line in editor: follows active execution stage
@@ -1493,15 +1551,28 @@ _start:
       logTerminal('<span class="text-emerald-400 font-semibold">[Program Reset]</span> Automatically reset CPU for new step session.');
     }
 
+    state.pausedAtBp = false;
     const { isDrained } = stepPipelineCycle();
 
+    // One line per clock cycle: what each stage worked on THIS cycle.
     const p = state.pipeline;
-    const ifDesc = p.IF_ID.valid ? p.IF_ID.mnemonic : 'bubble';
-    const idDesc = p.ID_EX.valid ? p.ID_EX.mnemonic : 'bubble';
-    const exDesc = p.EX_MEM.valid ? `${p.EX_MEM.mnemonic} (alu=${p.EX_MEM.aluResult})` : 'bubble';
-    const memDesc = p.MEM_WB.valid ? `${p.MEM_WB.mnemonic} (wb=${p.MEM_WB.writeBackData})` : 'bubble';
+    const bubble = '<span class="text-zinc-500">bubble</span>';
+    const named = (l, color, extra = '') => (l && l.valid
+      ? `<strong class="${color}">${escapeHtml(l.mnemonic)}</strong>${extra}` : bubble);
+    const wb = p.wbInst;
+    const wbWrites = wb && wb.regWrite && wb.rd !== 0;
+    logTerminal(`<span class="text-indigo-400 font-mono font-bold">[Cycle ${p.cycle}]</span> <span class="text-zinc-400 text-xs">` +
+      `IF: ${named(p.IF_ID, 'text-blue-300')} | ID: ${named(p.ID_EX, 'text-purple-300')} | ` +
+      `EX: ${named(p.EX_MEM, 'text-amber-300', ` (alu=${p.EX_MEM.aluResult})`)} | MEM: ${named(p.MEM_WB, 'text-cyan-300')} | ` +
+      `WB: ${named(wb, 'text-emerald-300', wbWrites ? ` (r${wb.rd}=${wb.writeBackData})` : '')}</span>`);
+    if (p.flushed) {
+      logTerminal('<span class="text-red-400 font-mono text-xs">&nbsp;&nbsp;\u21b3 Branch taken in EX: the instruction behind it was flushed (IF and ID show \u2717).</span>');
+    }
+    if (p.hazard) {
+      logTerminal(`<span class="text-amber-400 font-mono text-xs">&nbsp;&nbsp;\u26a0 RAW hazard: <b>${escapeHtml(p.hazard.reader)}</b> read r${p.hazard.reg} before <b>${escapeHtml(p.hazard.writer)}</b> wrote it back. ` +
+        `M3 has no forwarding: put ${p.hazard.nops} NOP(s) between them.</span>`);
+    }
 
-    logTerminal(`<span class="text-indigo-400 font-mono font-bold">[Cycle ${p.cycle}]</span> <span class="text-zinc-400 text-xs">IF: <strong class="text-blue-300">${ifDesc}</strong> | ID: <strong class="text-purple-300">${idDesc}</strong> | EX: <strong class="text-amber-300">${exDesc}</strong> | WB: <strong class="text-emerald-300">${memDesc}</strong></span>`);
 
     if (isDrained) {
       const cpi = p.instructionsRetired > 0 ? (p.cycle / p.instructionsRetired).toFixed(2) : '1.00';
@@ -1520,10 +1591,14 @@ _start:
       return;
     }
 
-    // Automatically reset CPU when starting a fresh execution or already drained
-    if (isPipelineDrained(instructions.length) || state.pipeline.cycle === 0) {
+    // Fresh start when finished or never started. Otherwise (stepped part-way, or parked on a breakpoint) continue.
+    if (isPipelineDrained(instructions.length) || (state.pipeline.cycle === 0 && !state.pausedAtBp)) {
+
       resetCpu();
     }
+    // Resuming from a breakpoint: step over the one we are parked on, but stop again if the program loops back to it.
+    let skipBpAtPC = state.pausedAtBp ? state.pc : null;
+    state.pausedAtBp = false;
 
     logTerminal(`<span class="text-blue-400 font-semibold">[Assemble & Run: ${state.activeFile}]</span> Simulating 5-Stage Synchronous Pipeline...`);
 
@@ -1533,8 +1608,10 @@ _start:
     while (!isPipelineDrained(instructions.length) && state.pipeline.cycle < maxCycles) {
       const currentInstIdx = Math.floor((state.pc - 0x00400000) / 4);
       if (currentInstIdx >= 0 && currentInstIdx < instructions.length) {
-        if (state.breakpoints.has(instructions[currentInstIdx].lineNum) && state.pipeline.cycle > 0) {
+        if (state.breakpoints.has(instructions[currentInstIdx].lineNum) && state.pc !== skipBpAtPC) {
           hitBreakpoint = true;
+          state.pausedAtBp = true;
+
           logTerminal(`<span class="text-red-400 font-bold">[Breakpoint Hit]</span> Paused before line ${instructions[currentInstIdx].lineNum}: <code>${escapeHtml(instructions[currentInstIdx].rawText)}</code>`);
           state.activeLineNum = instructions[currentInstIdx].lineNum;
           renderEditor();
@@ -1545,14 +1622,21 @@ _start:
       }
 
       stepPipelineCycle();
+      skipBpAtPC = null;
     }
 
     const p = state.pipeline;
+    const hitLimit = !hitBreakpoint && !isPipelineDrained(instructions.length);
+    if (hitLimit) {
+      logTerminal(`<span class="text-red-400 font-bold">[Stopped]</span> The program did not finish within ${maxCycles} cycles (infinite loop?). Press Reset to start again.`, 'error');
+      showToast(`Stopped after ${maxCycles} cycles: program did not finish`, 'error');
+    }
     const cpi = p.instructionsRetired > 0 ? (p.cycle / p.instructionsRetired).toFixed(2) : '1.00';
 
-    if (!hitBreakpoint) {
+    if (!hitBreakpoint && !hitLimit) {
       const nonZero = [8, 9, 10, 13, 6, 7].filter(i => state.registers[i] !== 0);
       const regSummary = nonZero.map(i => `r${i}=<strong>${state.registers[i]}</strong>`).join(' · ') || 'all zero';
+
 
       logTerminal(`
         <div class="p-2.5 bg-zinc-900 rounded-xl border border-emerald-500/40 text-[11px] font-mono space-y-1">
@@ -1564,6 +1648,10 @@ _start:
           <div class="text-zinc-400 text-[10px]">Registers Committed: ${regSummary}</div>
         </div>
       `);
+      if (p.rawHazards > 0) {
+        logTerminal(`<span class="text-amber-400 font-mono text-xs">\u26a0 ${p.rawHazards} cycle(s) had a RAW hazard. The M3 core has no forwarding, so some register values above may be stale. Add NOPs between dependent instructions, or use M4.</span>`);
+      }
+
       showToast(`Run Complete: ${p.instructionsRetired} retired in ${p.cycle} cycles (CPI: ${cpi})`, 'success');
     }
   }
@@ -1590,7 +1678,8 @@ _start:
 <div class="text-zinc-300 space-y-1">
   <div class="font-bold text-white mb-1">Available LIMO Studio CLI Commands:</div>
   <div><span class="text-emerald-400 font-mono w-28 inline-block">run [file]</span> - Assemble and execute assembly program (.limo or .s)</div>
-  <div><span class="text-emerald-400 font-mono w-28 inline-block">step</span> - Step through single instruction (F10)</div>
+  <div><span class="text-emerald-400 font-mono w-28 inline-block">step</span> - Advance ONE clock cycle (F10)</div>
+  <div><span class="text-emerald-400 font-mono w-28 inline-block">reset</span> - Reset CPU & pipeline (F9)</div>
   <div><span class="text-emerald-400 font-mono w-28 inline-block">ls</span> - List files in current project workspace</div>
   <div><span class="text-emerald-400 font-mono w-28 inline-block">cat &lt;file&gt;</span> - Print source contents of a file</div>
   <div><span class="text-emerald-400 font-mono w-28 inline-block">touch &lt;file&gt;</span> - Create a new assembly file (.limo / .s)</div>
@@ -1796,6 +1885,7 @@ _start:
 
   function switchFile(fileName) {
     if (!state.files[fileName]) return;
+    if (fileName !== state.activeFile) resetIfProgramChanged('Switched file: CPU & pipeline reset');
     state.activeFile = fileName;
     if (!state.openTabs.includes(fileName)) {
       state.openTabs.push(fileName);
@@ -1819,6 +1909,7 @@ _start:
     state.openTabs = state.openTabs.filter(t => t !== fileName);
     if (state.activeFile === fileName) {
       state.activeFile = state.openTabs[state.openTabs.length - 1] || Object.keys(state.files)[0] || '';
+      resetIfProgramChanged('Closed the running file: CPU & pipeline reset');
     }
     renderTabs();
     renderEditor();
@@ -1910,6 +2001,11 @@ _start:
       instructionsRetired: 0,
       lastWrittenReg: null,
       lastWrittenMem: null,
+      wbInst: null,           // instruction that retired THIS cycle (drives the WB pill and the chart)
+      hazard: null,           // RAW hazard visible this cycle (UI warning only; M3 has no forwarding)
+      rawHazards: 0,
+      chart: { rows: [], flushCycles: [] },
+
       IF_ID: createBubbleIF_ID(),
       ID_EX: createBubbleID_EX(),
       EX_MEM: createBubbleEX_MEM(),
@@ -1920,6 +2016,112 @@ _start:
 
   function advancePipeline(currentInst, currentPC) {
     stepPipelineCycle();
+  }
+
+  // --- M3 interface helpers: pipeline chart, RAW-hazard warning, Run/Continue label ---
+  const STAGE_ORDER = ['IF', 'ID', 'EX', 'MEM', 'WB'];
+
+  // Source text without its trailing comment: "khh r6, r0, 12   # r6 = 12" -> "khh r6, r0, 12"
+  function asmText(raw) {
+    return String(raw || '').replace(/\s*[#;].*$/, '').replace(/\s+/g, ' ').trim();
+  }
+
+  // Read-only RAW check. The instruction decoded this cycle (ID/EX) reads its registers in ID. If an older instruction
+  // that has not yet written back will write one of them, the value read is stale. The M3 core has no forwarding or
+  // stalling (that is M4), so this is a warning that the program is not hazard-free.
+  function detectRawHazard() {
+    const p = state.pipeline;
+    const reader = p.ID_EX;
+    if (!reader.valid) return null;
+    for (const reg of [reader.rs1, reader.rs2]) {
+      if (reg === 0) continue;
+      // [stage the writer is in this cycle, its latch, NOPs needed between writer and reader]
+      for (const [stage, w, nops] of [['EX', p.EX_MEM, 2], ['MEM', p.MEM_WB, 1]]) {
+        if (w.valid && w.regWrite && w.rd === reg) {
+          return { reg, nops, writerStage: stage, reader: asmText(reader.rawAssembly), writer: asmText(w.rawAssembly) };
+        }
+      }
+    }
+    return null;
+  }
+
+  // Called once per clock cycle after the latches update. Builds the instruction-by-cycle chart from what was really
+  // in each stage this cycle. An instruction is followed from stage to stage by its PC; a new fetch starts a new row.
+  function recordPipelineHistory(flushed) {
+    const p = state.pipeline;
+    const c = p.cycle;
+    const rows = p.chart.rows;
+    const touched = new Set();
+
+    [p.IF_ID, p.ID_EX, p.EX_MEM, p.MEM_WB, p.wbInst].forEach((latch, si) => {
+      if (!latch || !latch.valid) return;
+      let row = si > 0
+        ? rows.find((r) => !touched.has(r) && r.pc === latch.pc && r.lastCycle === c - 1 && r.lastStage === STAGE_ORDER[si - 1])
+        : null;
+      if (!row) {
+        row = { pc: latch.pc, line: latch.lineNum, text: asmText(latch.rawAssembly), cells: {}, lastCycle: c, lastStage: STAGE_ORDER[si] };
+        rows.push(row);
+      }
+      row.cells[c] = STAGE_ORDER[si];
+      row.lastCycle = c;
+      row.lastStage = STAGE_ORDER[si];
+      touched.add(row);
+    });
+
+    // In flight last cycle but did not advance: squashed by a taken branch. Mark the stage it had reached with a cross.
+    rows.forEach((r) => {
+      if (!touched.has(r) && r.lastCycle === c - 1 && r.lastStage !== 'WB' && r.lastStage !== 'X') {
+        r.cells[c] = STAGE_ORDER[STAGE_ORDER.indexOf(r.lastStage) + 1] + '\u2717';
+        r.lastStage = 'X';
+      }
+    });
+    if (flushed) p.chart.flushCycles.push(c);
+
+    p.hazard = detectRawHazard();
+    if (p.hazard) p.rawHazards++;
+  }
+
+  function renderPipelineChart() {
+    const el = document.getElementById('pipeChartContainer');
+    if (!el) return;
+    const p = state.pipeline;
+    if (!p.chart || p.chart.rows.length === 0) {
+      el.innerHTML = '<div class="pc-empty">Press Step (F10). Each row is one instruction, each column one clock cycle.</div>';
+      return;
+    }
+    const last = p.cycle;
+    const first = Math.max(1, last - 11); // the 12 most recent cycles
+    const cols = [];
+    for (let c = first; c <= last; c++) cols.push(c);
+
+    const head = cols.map((c) => {
+      const flush = p.chart.flushCycles.includes(c)
+        ? '<span class="pc-flushmark" title="Taken branch: the instruction behind it was flushed">\u26A1</span>' : '';
+      return `<th scope="col" class="${c === last ? 'pc-now' : ''}">${c}${flush}</th>`;
+    }).join('');
+
+    const body = p.chart.rows.filter((r) => cols.some((c) => r.cells[c])).map((r) => {
+      const cells = cols.map((c) => {
+        const s = r.cells[c];
+        if (!s) return '<td class="pc-cell"></td>';
+        const kind = s.includes('\u2717') ? 'pc-sq' : `pc-${s}`;
+        return `<td class="pc-cell ${kind}${c === last ? ' pc-now' : ''}" title="${s.includes('\u2717') ? 'squashed (flushed)' : s}">${s}</td>`;
+      }).join('');
+      return `<tr><th scope="row" class="pc-instr" title="line ${r.line}">${escapeHtml(r.text)}</th>${cells}</tr>`;
+    }).join('');
+
+    el.innerHTML = `<table class="pc-table"><thead><tr><th scope="col" class="pc-instr">Cycle \u2192</th>${head}</tr></thead><tbody>${body}</tbody></table>`;
+    el.scrollLeft = el.scrollWidth; // keep the newest cycle in view
+  }
+
+  // The Run button says Continue while a run is part-way (stepped, or parked on a breakpoint).
+  function updateRunButtonLabel() {
+    const label = document.getElementById('runButtonLabel');
+    if (!label) return;
+    const file = state.files[state.activeFile];
+    const total = file ? parseExecutableProgram(file.content).instructions.length : 0;
+    label.textContent = state.pipeline.cycle > 0 && !isPipelineDrained(total) ? 'Continue' : 'Run';
+
   }
 
   function renderPipelineRegisters() {
@@ -1958,58 +2160,51 @@ _start:
         : 'px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 border border-zinc-700';
     }
 
-    // Live 5-Stage Visualizer Pills
-    const pillIF = document.getElementById('pillIF');
-    const pillID = document.getElementById('pillID');
-    const pillEX = document.getElementById('pillEX');
-    const pillMEM = document.getElementById('pillMEM');
-    const pillWB = document.getElementById('pillWB');
+    // Live 5-Stage Visualizer Pills: what each stage worked on THIS cycle. The text carries the meaning
+    // (mnemonic, bubble, or a cross when squashed); colour only reinforces it. Hover for the full instruction.
+    const setPill = (id, num, name, latch, activeClass, opts = {}) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (latch && latch.valid) {
+        el.className = `p-1 rounded-md ${activeClass} font-bold shadow-sm${opts.pulse ? ' animate-pulse' : ''}`;
+        el.textContent = `${num}. ${name} (${opts.label || latch.mnemonic})`;
+        el.title = `${name}: ${asmText(latch.rawAssembly)} (line ${latch.lineNum})`;
+      } else {
+        el.className = 'p-1 rounded-md bg-zinc-900 text-zinc-500 border border-zinc-800 font-bold transition';
+        el.textContent = opts.squashed ? `${num}. ${name} \u2717` : `${num}. ${name}`;
+        el.title = opts.squashed ? `${name}: instruction squashed by a taken branch (flush)` : `${name}: bubble (no instruction)`;
+      }
+    };
+    setPill('pillIF', 1, 'IF', ifid, 'bg-blue-600/30 text-blue-300 border border-blue-500/50', { squashed: p.flushed });
+    setPill('pillID', 2, 'ID', idex, 'bg-purple-600/30 text-purple-300 border border-purple-500/50', { squashed: p.flushed });
+    setPill('pillEX', 3, 'EX', exmem, 'bg-amber-600/30 text-amber-300 border border-amber-500/50');
+    setPill('pillMEM', 4, 'MEM', memwb, 'bg-cyan-600/30 text-cyan-300 border border-cyan-500/50');
+    // WB is the instruction that retired this cycle (not the one now in MEM/WB, which retires next cycle).
+    const wb = p.wbInst;
+    const wbWrites = !!(wb && wb.regWrite && wb.rd !== 0);
+    setPill('pillWB', 5, 'WB', wb, 'bg-emerald-600/30 text-emerald-300 border border-emerald-500/50',
+      { pulse: wbWrites, label: wbWrites ? `r${wb.rd}` : (wb ? wb.mnemonic : '') });
 
-    if (pillIF) {
-      if (ifid.valid) {
-        pillIF.className = 'p-1 rounded-md bg-blue-600/30 text-blue-300 border border-blue-500/50 font-bold shadow-sm';
-        pillIF.textContent = `1. IF (${ifid.mnemonic})`;
-      } else {
-        pillIF.className = 'p-1 rounded-md bg-zinc-900 text-zinc-500 border border-zinc-800 font-bold transition';
-        pillIF.textContent = '1. IF';
-      }
+    // RAW hazard warning (the M3 core has no forwarding, so a hazard means a stale register value)
+    const hz = p.hazard || null;
+    const pipeFwdBadge = document.getElementById('pipeFwdBadge');
+    if (pipeFwdBadge) {
+      pipeFwdBadge.textContent = hz ? `\u26A0 RAW hazard: r${hz.reg}` : 'No RAW hazard';
+      pipeFwdBadge.className = hz
+        ? 'px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold'
+        : 'px-2 py-0.5 rounded-full bg-blue-900/30 text-blue-300 border border-blue-500/30';
     }
-    if (pillID) {
-      if (idex.valid) {
-        pillID.className = 'p-1 rounded-md bg-purple-600/30 text-purple-300 border border-purple-500/50 font-bold shadow-sm';
-        pillID.textContent = `2. ID (${idex.mnemonic})`;
-      } else {
-        pillID.className = 'p-1 rounded-md bg-zinc-900 text-zinc-500 border border-zinc-800 font-bold transition';
-        pillID.textContent = '2. ID';
-      }
+    const pipeHazardDetail = document.getElementById('pipeHazardDetail');
+    if (pipeHazardDetail) {
+      pipeHazardDetail.classList.toggle('hidden', !hz);
+      pipeHazardDetail.textContent = hz
+        ? `"${hz.reader}" read r${hz.reg} before "${hz.writer}" wrote it back, so the value is stale. M3 has no forwarding: put ${hz.nops} NOP(s) (khh r0, r0, 0) between them.`
+        : '';
     }
-    if (pillEX) {
-      if (exmem.valid) {
-        pillEX.className = 'p-1 rounded-md bg-amber-600/30 text-amber-300 border border-amber-500/50 font-bold shadow-sm';
-        pillEX.textContent = `3. EX (${exmem.mnemonic})`;
-      } else {
-        pillEX.className = 'p-1 rounded-md bg-zinc-900 text-zinc-500 border border-zinc-800 font-bold transition';
-        pillEX.textContent = '3. EX';
-      }
-    }
-    if (pillMEM) {
-      if (memwb.valid) {
-        pillMEM.className = 'p-1 rounded-md bg-cyan-600/30 text-cyan-300 border border-cyan-500/50 font-bold shadow-sm';
-        pillMEM.textContent = `4. MEM (${memwb.mnemonic})`;
-      } else {
-        pillMEM.className = 'p-1 rounded-md bg-zinc-900 text-zinc-500 border border-zinc-800 font-bold transition';
-        pillMEM.textContent = '4. MEM';
-      }
-    }
-    if (pillWB) {
-      if (memwb.valid && memwb.regWrite && memwb.rd !== 0) {
-        pillWB.className = 'p-1 rounded-md bg-emerald-600/30 text-emerald-300 border border-emerald-500/50 font-bold shadow-sm animate-pulse';
-        pillWB.textContent = `5. WB (r${memwb.rd})`;
-      } else {
-        pillWB.className = 'p-1 rounded-md bg-zinc-900 text-zinc-500 border border-zinc-800 font-bold transition';
-        pillWB.textContent = '5. WB';
-      }
-    }
+
+    renderPipelineChart();
+    updateRunButtonLabel();
+
 
     // 2. Inter-Stage Register Cards
     // IF/ID
@@ -2429,6 +2624,7 @@ _start:
         if (state.files[state.activeFile]) {
           state.files[state.activeFile].content = textarea.value;
           saveFiles();
+          resetIfProgramChanged('Program edited: CPU & pipeline reset to cycle 0');
         }
         renderEditor();
         syncEditorScroll();
@@ -2713,10 +2909,12 @@ _start:
       }
     });
     document.getElementById('btnMemReset')?.addEventListener('click', () => {
-      state.simulatedMemory = { 1004: 20 };
+      state.simulatedMemory = {};
+      state.memView = null;
       if (state.pipeline) state.pipeline.lastWrittenMem = null;
       renderMemoryHex();
-      logTerminal('<span class="text-amber-400 font-semibold">[Memory Reset]</span> Data memory cleared (Mem[1004]=20 restored).');
+      logTerminal('<span class="text-amber-400 font-semibold">[Memory Reset]</span> Data memory cleared: every word reads as 0.');
+
       showToast('Data memory reset', 'info');
     });
 
@@ -2860,6 +3058,7 @@ _start:
         const updated = current.split(q).join(rep);
         state.files[state.activeFile].content = updated;
         saveFiles();
+        resetIfProgramChanged('Program edited: CPU & pipeline reset to cycle 0');
         renderEditor();
         updateSearchResults();
         showToast('Replaced all occurrences', 'success');
@@ -3146,7 +3345,8 @@ _start:
   // --- Command Palette ---
   const COMMANDS = [
     { title: 'Assemble & Run Program', shortcut: 'F5', action: () => runSimulation() },
-    { title: 'Step Single Instruction', shortcut: 'F10', action: () => stepInstruction() },
+    { title: 'Step Clock Cycle', shortcut: 'F10', action: () => stepInstruction() },
+    { title: 'Reset CPU & Pipeline', shortcut: 'F9', action: () => resetCpu() },
     { title: 'New LIMO / Assembly File', shortcut: 'Alt+N', action: () => openNewFileModal() },
     { title: 'Save Current File', shortcut: 'Ctrl+S', action: () => { saveFiles(); showToast('Saved', 'success'); } },
     { title: 'Open Local File', shortcut: 'Ctrl+O', action: () => openLocalFileDialog() },
